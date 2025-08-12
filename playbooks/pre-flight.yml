@@ -1,0 +1,28 @@
+---
+- name: Pre-flight checks only.
+  hosts: workstation.lab.example.com
+  gather_subset: min
+  become: no
+  tasks:
+    - include_role:
+        name: check-env
+      tags: check
+    - include_role:
+        name: fix-operators
+      tags: fix
+    - include_role:
+        name: remove-operators
+      loop: "{{ removed_operators }}"
+      loop_control:
+        loop_var: role
+      tags: prep
+#    - include_role:
+#        name: deploy-operator
+#      tags: prep
+#    - include_role:
+#        name: install-labs
+#      tags: workstation
+#    - include_role:
+#        name: prep-workspace
+#      tags: workstation
+...

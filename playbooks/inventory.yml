@@ -1,0 +1,52 @@
+---
+# A simplistic inventory for the classroom VMs.
+all:
+  hosts:
+    workstation.lab.example.com:
+      ansible_connection: local
+    utility.lab.example.com:
+      ansible_user: lab
+    bastion.lab.example.com:
+      ansible_host: 172.25.250.254
+      ansible_user: root
+  vars:
+    # OpenShift versions.
+    ocp_maj: "4.16"
+    ocp_z: "4.16.2"
+
+    # Operators that need to be (re)installed.
+    #
+    # The first item in the list is also used for checking whether catalog(s)
+    # were recreated successfully.
+    added_operators:
+      - catalog: redhat-operators
+        package: metallb-operator
+        channel: stable
+        namespace: metallb-system
+        desired_csv: metallb-operator.v4.16.0-202410292005
+        og_namespaces: []
+
+    # Some cleanup here.
+    removed_operators:
+      - sub_nspc: openshift-cnv
+        sub_name: kubevirt-hyperconverged
+        csv_kill: yes
+        csv_name: kubevirt-hyperconverged-operator.v4.16.1
+        nsp_kill: yes
+        pre_cleanup:
+          - kind: hyperconverged
+            apiv: hco.kubevirt.io/v1beta1
+        add_cleanup:
+          - aaqs.aaq.kubevirt.io
+          - cdis.cdi.kubevirt.io
+          - hostpathprovisioners.hostpathprovisioner.kubevirt.io
+          - hyperconvergeds.hco.kubevirt.io
+          - kubevirts.kubevirt.io
+          - mtqs.mtq.kubevirt.io
+          - networkaddonsconfigs.networkaddonsoperator.network.kubevirt.io
+          - ssps.ssp.kubevirt.io
+
+    # The list of OpenShift clusters check-env will try to connect to.
+    clusters:
+      - ocp4
+...

@@ -1,0 +1,71 @@
+---
+# Ensures all the operator artifacts are created and waits for CSV to succeed.
+#
+# The following variables must exist:
+#
+#   removed_operators:    a list of below dictionaries
+#     - sub_nspc          subscription namespace
+#       sub_name          subscription name
+#       csv_name          CSV name to check for
+#       pre_cleanup       pre-cleanup tasks, a list of rtypes to remove (ALL)
+#         - apiv
+#           kind
+#       add_cleanup       additional CRDs to remove post-uninstall, a list
+#
+# This role must then be applied as:
+#
+#   - include_role:
+#       name: remove-operators
+#     loop: "{{ removed_operators }}"
+#     loop_control:
+#       loop_var: role
+#
+# What this means is that each item of removed_operators is expected to be
+# placed in the "role" variable prior to iterating over this role.
+#
+- name: Remove any of the resources found
+  k8s:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: "{{ item.apiv }}"
+    kind: "{{ item.kind }}"
+    delete_all: true
+    state: absent
+  ignore_errors: yes
+  loop: "{{ role.pre_cleanup }}"
+  register: removed
+
+- name: Remove the subscription
+  k8s:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: operators.coreos.com/v1alpha1
+    kind: subscription
+    name: "{{ role.sub_name }}"
+    namespace: "{{ role.sub_nspc }}"
+    state: absent
+  ignore_errors: yes
+
+- name: Do post-cleanup
+  k8s:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: apiextensions.k8s.io/v1
+    kind: customresourcedefinition
+    name: "{{ item }}"
+    state: absent
+  ignore_errors: yes
+  loop: "{{ role.add_cleanup }}"
+
+- name: Remove the CSV as well, if so required
+  k8s:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: operators.coreos.com/v1alpha1
+    kind: clusterserviceversion
+    name: "{{ role.csv_name }}"
+    namespace: "{{ role.sub_nspc }}"
+    state: absent
+  ignore_errors: yes
+  when: role.csv_kill
+...

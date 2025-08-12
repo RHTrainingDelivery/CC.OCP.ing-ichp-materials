@@ -1,0 +1,43 @@
+---
+# Variables affecting this role:
+#
+#  clusters:
+#   just a simple list of clusters to check
+#
+- name: Make sure kubeconfig is there on utility
+  delegate_to: utility.lab.example.com
+  file:
+    path: /home/lab/{{ item }}/auth/kubeconfig
+    state: file
+  loop: "{{ clusters }}"
+
+- name: Create a temp dir
+  file:
+    path: tmp
+    state: directory
+
+- name: Copy over the kubeconfig
+  delegate_to: utility.lab.example.com
+  fetch:
+    src: /home/lab/{{ item }}/auth/kubeconfig
+    dest: tmp/kubeconfig-{{ item }}
+    flat: yes
+  loop: "{{ clusters }}"
+
+- name: We need some packages to be there
+  become: yes
+  yum:
+    name:
+      - python3-jmespath
+      - python3.11-jmespath
+      - python3-kubernetes
+      - ansible-collection-ansible-posix
+      - ansible-collection-community-general
+    state: latest
+
+- name: Verify cluster connectivity
+  kubernetes.core.k8s_cluster_info:
+    kubeconfig: tmp/kubeconfig-{{ item }}
+    validate_certs: no
+  loop: "{{ clusters }}"
+...
