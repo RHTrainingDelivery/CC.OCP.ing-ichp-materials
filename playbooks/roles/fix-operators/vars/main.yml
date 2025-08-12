@@ -3,6 +3,7 @@ removed_sources:
   - do280-catalog
   - do280-catalog-cs
   - do288-catalog-cs
+  - do370-catalog-cs
   - do380-catalog-cs
 catalog_sources:
   - name: redhat-operators
