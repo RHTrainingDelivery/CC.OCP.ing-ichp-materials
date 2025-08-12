@@ -16,9 +16,9 @@
       loop_control:
         loop_var: role
       tags: prep
-#    - include_role:
-#        name: deploy-operator
-#      tags: prep
+    - include_role:
+        name: deploy-operator
+      tags: prep
 #    - include_role:
 #        name: install-labs
 #      tags: workstation
