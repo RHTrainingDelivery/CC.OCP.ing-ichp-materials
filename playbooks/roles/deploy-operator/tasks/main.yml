@@ -6,6 +6,7 @@
 #  added_operators:   (list)
 #    - catalog:       the catalog of the manifest
 #      package:       the name of the packagemanifest
+#      subscription:  the name of the subscription (optional, defaults to package)
 #      channel:       which channel to install from
 #      namespace:     target namespace for subscription
 #      desired_csv:   for verification - wait for this CSV to appear
@@ -76,7 +77,7 @@
     api_version: operators.coreos.com/v1alpha1
     kind: subscription
     namespace: "{{ role.namespace }}"
-    name: "{{ role.package }}"
+    name: "{{ role.subscription | default(role.package) }}"
     definition:
       spec:
         source: "{{ role.catalog }}"
