@@ -18,6 +18,9 @@
       tags: prep
     - include_role:
         name: deploy-operator
+      loop: "{{ added_operators }}"
+      loop_control:
+        loop_var: role
       tags: prep
 #    - include_role:
 #        name: install-labs
