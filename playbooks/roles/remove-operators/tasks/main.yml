@@ -68,4 +68,15 @@
     state: absent
   ignore_errors: yes
   when: role.csv_kill
+
+- name: Lastly, remove the namespace, if instructed
+  k8s:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: v1
+    kind: namespace
+    name: "{{ role.sub_nspc }}"
+    state: absent
+  ignore_errors: yes
+  when: role.nsp_kill
 ...
