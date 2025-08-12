@@ -45,6 +45,22 @@ all:
           - mtqs.mtq.kubevirt.io
           - networkaddonsconfigs.networkaddonsoperator.network.kubevirt.io
           - ssps.ssp.kubevirt.io
+          - migrationpolicies.migrations.kubevirt.io
+          - virtualmachineclones.clone.kubevirt.io
+          - virtualmachineclusterinstancetypes.instancetype.kubevirt.io
+          - virtualmachineclusterpreferences.instancetype.kubevirt.io
+          - virtualmachineexports.export.kubevirt.io
+          - virtualmachineinstancemigrations.kubevirt.io
+          - virtualmachineinstancepresets.kubevirt.io
+          - virtualmachineinstancereplicasets.kubevirt.io
+          - virtualmachineinstances.kubevirt.io
+          - virtualmachineinstancetypes.instancetype.kubevirt.io
+          - virtualmachinepools.pool.kubevirt.io
+          - virtualmachinepreferences.instancetype.kubevirt.io
+          - virtualmachinerestores.snapshot.kubevirt.io
+          - virtualmachines.kubevirt.io
+          - virtualmachinesnapshotcontents.snapshot.kubevirt.io
+          - virtualmachinesnapshots.snapshot.kubevirt.io
 
     # The list of OpenShift clusters check-env will try to connect to.
     clusters:
