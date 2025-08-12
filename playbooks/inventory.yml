@@ -23,7 +23,7 @@ all:
         package: metallb-operator
         channel: stable
         namespace: metallb-system
-        desired_csv: metallb-operator.v4.16.0-202410292005
+        desired_csv: metallb-operator.v4.16.0-202507221936
         og_namespaces: []
 
     # Some cleanup here.
