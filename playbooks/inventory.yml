@@ -34,6 +34,8 @@ all:
         csv_name: kubevirt-hyperconverged-operator.v4.16.1
         nsp_kill: yes
         pre_cleanup:
+          - kind: kubevirt
+            apiv: kubevirt.io/v1
           - kind: hyperconverged
             apiv: hco.kubevirt.io/v1beta1
         add_cleanup:
