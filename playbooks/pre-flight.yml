@@ -4,22 +4,48 @@
   gather_subset: min
   become: no
   tasks:
+    # Deploy packages, get auth info, etc.
     - include_role:
         name: check-env
-      tags: check
-    - include_role:
-        name: fix-operators
-      tags: fix
+        apply:
+          tags:
+            - check
+      tags:
+        - check
+    # THIS MUST BE BEFORE FIX OPERATORS!
     - include_role:
         name: remove-operators
+        apply:
+          tags:
+            - prep
+            - remove
       loop: "{{ removed_operators }}"
       loop_control:
         loop_var: role
-      tags: prep
+      tags:
+        - prep
+        - remove
+    # Fix the operator catalog sources.
+    - include_role:
+        name: fix-operators
+        apply:
+          tags:
+            - prep
+            - fix
+      tags:
+        - prep
+        - fix
+    # Re-apply any operators that have had their catalog sources changed.
     - include_role:
         name: deploy-operator
+        apply:
+          tags:
+            - prep
+            - deploy
       loop: "{{ added_operators }}"
       loop_control:
         loop_var: role
-      tags: prep
+      tags:
+        - prep
+        - deploy
 ...
