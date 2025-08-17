@@ -8,9 +8,14 @@
 #       sub_name          subscription name
 #       csv_name          CSV name to check for
 #       pre_cleanup       pre-cleanup tasks, a list of rtypes to remove (ALL)
-#         - apiv
-#           kind
-#       add_cleanup       additional CRDs to remove post-uninstall, a list
+#         - apiv            api version
+#           kind            resource kind
+#           nspc            namespace (required for namespaced resources)
+#           wait_for_gone   whether to wait for the resource to disappear
+#           wait_for_sec    how long (in seconds) to wait for gone
+#       add_cleanup       additional CRDs to remove post-uninstall, a list of
+#         - name            crd name, OR
+#           label           crd label, in case both are defined, both are used
 #
 # This role must then be applied as:
 #
@@ -23,17 +28,12 @@
 # What this means is that each item of removed_operators is expected to be
 # placed in the "role" variable prior to iterating over this role.
 #
-- name: Remove any of the resources found
-  k8s:
-    kubeconfig: tmp/kubeconfig-ocp4
-    validate_certs: no
-    api_version: "{{ item.apiv }}"
-    kind: "{{ item.kind }}"
-    delete_all: true
-    state: absent
-  ignore_errors: yes
+# Must include tasks because you can't loop over a block.
+- name: Remove any of the resources found from pre_cleanup
+  include_tasks: tasks/pre-cleanup.yml
   loop: "{{ role.pre_cleanup }}"
-  register: removed
+  loop_control:
+    label: "{{ item.kind }}.{{ item.apiv }}"
 
 - name: Remove the subscription
   k8s:
@@ -46,17 +46,6 @@
     state: absent
   ignore_errors: yes
 
-- name: Do post-cleanup
-  k8s:
-    kubeconfig: tmp/kubeconfig-ocp4
-    validate_certs: no
-    api_version: apiextensions.k8s.io/v1
-    kind: customresourcedefinition
-    name: "{{ item }}"
-    state: absent
-  ignore_errors: yes
-  loop: "{{ role.add_cleanup }}"
-
 - name: Remove the CSV as well, if so required
   k8s:
     kubeconfig: tmp/kubeconfig-ocp4
@@ -68,6 +57,19 @@
     state: absent
   ignore_errors: yes
   when: role.csv_kill
+
+- name: Do post-cleanup
+  k8s:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: apiextensions.k8s.io/v1
+    kind: customresourcedefinition
+    name: "{{ item.name | default(omit) }}"
+    label_selectors:
+      - "{{ item.label | default(omit) }}"
+    state: absent
+  ignore_errors: yes
+  loop: "{{ role.add_cleanup }}"
 
 - name: Lastly, remove the namespace, if instructed
   k8s:

@@ -1,0 +1,47 @@
+---
+- name: Tell what is being done.
+  ansible.builtin.pause:
+    prompt: |
+      ********************************************************************
+      
+      Removing all instances of {{ item.kind }}.{{ item.apiv }}
+      
+      ********************************************************************
+    seconds: 0
+
+- name: Remove the resources
+  k8s:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: "{{ item.apiv }}"
+    kind: "{{ item.kind }}"
+    namespace: "{{ item.nspc | default(omit) }}"
+    delete_all: true
+    state: absent
+  ignore_errors: yes
+  register: removed_rsrc
+
+- debug:
+    verbosity: 2
+    var: removed_rsrc
+
+- name: Wait for the resource(s) to be gone if so requested
+  k8s_info:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: "{{ item.apiv }}"
+    kind: "{{ item.kind }}"
+    namespace: "{{ item.nspc | default(omit) }}"
+  ignore_errors: yes
+  register: remaining_rsrc
+  until: (remaining_rsrc.resources | length) == 0
+  retries: "{{ (item.wait_for_sec | default(6)) / 5 }}"
+  delay: 5
+  when:
+    - item.wait_for_gone is defined
+    - item.wait_for_gone
+
+- debug:
+    verbosity: 2
+    var: remaining_rsrc
+...

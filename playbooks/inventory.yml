@@ -34,35 +34,15 @@ all:
         csv_name: kubevirt-hyperconverged-operator.v4.16.1
         nsp_kill: yes
         pre_cleanup:
-          - kind: kubevirt
-            apiv: kubevirt.io/v1
           - kind: hyperconverged
             apiv: hco.kubevirt.io/v1beta1
+            nspc: openshift-cnv
+            wait_for_gone: yes
+            wait_for_sec: 600
         add_cleanup:
-          - aaqs.aaq.kubevirt.io
-          - cdis.cdi.kubevirt.io
-          - hostpathprovisioners.hostpathprovisioner.kubevirt.io
-          - hyperconvergeds.hco.kubevirt.io
-          - kubevirts.kubevirt.io
-          - mtqs.mtq.kubevirt.io
-          - networkaddonsconfigs.networkaddonsoperator.network.kubevirt.io
-          - ssps.ssp.kubevirt.io
-          - migrationpolicies.migrations.kubevirt.io
-          - virtualmachineclones.clone.kubevirt.io
-          - virtualmachineclusterinstancetypes.instancetype.kubevirt.io
-          - virtualmachineclusterpreferences.instancetype.kubevirt.io
-          - virtualmachineexports.export.kubevirt.io
-          - virtualmachineinstancemigrations.kubevirt.io
-          - virtualmachineinstancepresets.kubevirt.io
-          - virtualmachineinstancereplicasets.kubevirt.io
-          - virtualmachineinstances.kubevirt.io
-          - virtualmachineinstancetypes.instancetype.kubevirt.io
-          - virtualmachinepools.pool.kubevirt.io
-          - virtualmachinepreferences.instancetype.kubevirt.io
-          - virtualmachinerestores.snapshot.kubevirt.io
-          - virtualmachines.kubevirt.io
-          - virtualmachinesnapshotcontents.snapshot.kubevirt.io
-          - virtualmachinesnapshots.snapshot.kubevirt.io
+          - name: aaqs.aaq.kubevirt.io
+          - name: cdis.cdi.kubevirt.io
+          - label: operators.coreos.com/kubevirt-hyperconverged.openshift-cnv
 
     # The list of OpenShift clusters check-env will try to connect to.
     clusters:
