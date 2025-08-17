@@ -85,6 +85,7 @@
   until:
     - (cat_stat.resources | length) == 1
     - cat_stat.resources[0].status is defined
+    - cat_stat.resources[0].status.connectionState is defined
     - cat_stat.resources[0].status.connectionState.lastObservedState == "READY"
   retries: 30
   delay: 10
