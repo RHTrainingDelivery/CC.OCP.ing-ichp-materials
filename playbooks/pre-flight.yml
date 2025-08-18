@@ -58,4 +58,14 @@
       tags:
         - prep
         - setup
+    # Ensure a Keycloak is there.
+    - include_role:
+        name: deploy-rhbk
+        apply:
+          tags:
+            - prep
+            - sso
+      tags:
+        - prep
+        - sso
 ...

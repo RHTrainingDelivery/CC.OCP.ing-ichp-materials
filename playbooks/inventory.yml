@@ -14,6 +14,17 @@ all:
     ocp_maj: "4.16"
     ocp_z: "4.16.2"
 
+    rhbk:
+      namespace: keycloak
+      realm: ichp
+      users:
+        - username: johndoe
+          password: redhat
+          fullname: John Doe
+        - username: janedoe
+          password: redhat
+          fullname: Jane Doe
+
     # Operators that need to be (re)installed.
     #
     # The first item in the list is also used for checking whether catalog(s)
