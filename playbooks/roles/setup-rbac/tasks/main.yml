@@ -1,4 +1,4 @@
-----
+---
 # Creates all ING-related ClusterRoles in the target cluster.
 # Ensures that corresponding OpenShift groups exist.
 - name: Make sure the cluster roles are there
@@ -19,4 +19,4 @@
     kind: group
     name: "{{ item }}s"
   loop: "{{ create_cluster_roles }}"
-....
+...
