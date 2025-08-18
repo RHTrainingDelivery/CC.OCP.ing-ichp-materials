@@ -33,8 +33,7 @@
 #
 - name: Tech hack. Prevent anything from blowing up because rhbk is defined somewhere, but not its structured contents.
   ansible.builtin.set_fact:
-    rhbk:
-      db: {}
+    rhbk: "{{ rhbk | default({}) | combine({ 'db': {} }) }}"
   when:
     - rhbk.db is not defined
 
