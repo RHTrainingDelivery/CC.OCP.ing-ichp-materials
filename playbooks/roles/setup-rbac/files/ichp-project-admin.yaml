@@ -1,24 +1,13 @@
-aggregationRule:
-  clusterRoleSelectors:
-  - matchLabels:
-      rbac.ichp.ing.net/aggregate-to-ichp-project-admin: "true"
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   annotations:
-    argocd.argoproj.io/sync-options: Prune=false
-    kubectl.kubernetes.io/last-applied-configuration: |
-      {"aggregationRule":{"clusterRoleSelectors":[{"matchLabels":{"rbac.ichp.ing.net/aggregate-to-ichp-project-admin":"true"}}]},"apiVersion":"rbac.authorization.k8s.io/v1","kind":"ClusterRole","metadata":{"annotations":{"argocd.argoproj.io/sync-options":"Prune=false"},"labels":{"app.kubernetes.io/instance":"rbac","app.kubernetes.io/managed-by":"Helms","app.kubernetes.io/name":"ichp-rbac","app.kubernetes.io/version":"1.16.0","helm.sh/chart":"ichp-rbac-0.1.0"},"name":"ichp-project-admin"}}
-  creationTimestamp: "2024-03-08T22:14:44Z"
+    openshift.io/description: An ICHP dedicated role for admins.
+    openshift.io/reconcile-protect: "true"
   labels:
     app.kubernetes.io/instance: rbac
-    app.kubernetes.io/managed-by: Helms
     app.kubernetes.io/name: ichp-rbac
-    app.kubernetes.io/version: 1.16.0
-    helm.sh/chart: ichp-rbac-0.1.0
   name: ichp-project-admin
-  resourceVersion: "116608"
-  uid: 48e3d4b3-e8ef-41bf-9edf-020a8a88f14c
 rules:
 - apiGroups:
   - authdelegation.ichp.ing.net
