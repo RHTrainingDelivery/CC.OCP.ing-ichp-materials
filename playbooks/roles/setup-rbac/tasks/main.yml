@@ -17,6 +17,6 @@
     validate_certs: no
     api_version: user.openshift.io/v1
     kind: group
-    name: "{{ item }}s"
+    name: "{{ item | ansible.builtin.regex_replace('ichp', 'global') }}s"
   loop: "{{ create_cluster_roles }}"
 ...
