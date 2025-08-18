@@ -242,4 +242,27 @@
           targetPort: 8443
         tls:
           termination: reencrypt
+          insecureEdgeTerminationPolicy: Redirect
+
+- name: Check whether there is already a realm import CR
+  kubernetes.core.k8s_info:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: k8s.keycloak.org/v2alpha1
+    kind: keycloakrealmimport
+    namespace: "{{ rhbk.namespace | default('keycloak') }}"
+  register: realm_imports
+
+- name: If there are no realm imports, create one.
+  block:
+    - name: Apply a template realm import.
+      kubernetes.core.k8s:
+        kubeconfig: tmp/kubeconfig-ocp4
+        validate_certs: no
+        api_version: k8s.keycloak.org/v2alpha1
+        kind: keycloakrealmimport
+        namespace: "{{ rhbk.namespace | default('keycloak') }}"
+        name: "{{ rhbk.name | default('sso') }}-{{ rhbk.realm | default('sample-realm') }}-import"
+        template: templates/realm-import-template.yaml.j2
+
 ...
