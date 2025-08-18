@@ -1,0 +1,22 @@
+----
+# Creates all ING-related ClusterRoles in the target cluster.
+# Ensures that corresponding OpenShift groups exist.
+- name: Make sure the cluster roles are there
+  kubernetes.core.k8s:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: rbac.authorization.k8s.io/v1
+    kind: clusterrole
+    name: "{{ item }}"
+    src: "files/{{ item }}.yaml"
+  loop: "{{ create_cluster_roles }}"
+
+- name: Ensure that corresponding cluster groups also exist
+  kubernetes.core.k8s:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: user.openshift.io/v1
+    kind: group
+    name: "{{ item }}s"
+  loop: "{{ create_cluster_roles }}"
+....

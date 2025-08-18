@@ -1,0 +1,45 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"rbac.authorization.k8s.io/v1","kind":"ClusterRole","metadata":{"annotations":{"openshift.io/description":"An ICHP dedicated role for debugging.","openshift.io/reconcile-protect":"true"},"labels":{"app.kubernetes.io/instance":"rbac","app.kubernetes.io/managed-by":"Helms","app.kubernetes.io/name":"ichp-rbac","app.kubernetes.io/version":"1.16.0","helm.sh/chart":"ichp-rbac-0.1.0"},"name":"ichp-project-debugger"},"rules":[{"apiGroups":[""],"resources":["pods","pods/attach","pods/exec","pods/portforward","pods/proxy"],"verbs":["create","delete","deletecollection","get","list","patch","update","watch"]},{"apiGroups":[""],"resources":["pods/log","pods/status"],"verbs":["get","list","watch"]}]}
+    openshift.io/description: An ICHP dedicated role for debugging.
+    openshift.io/reconcile-protect: "true"
+  creationTimestamp: "2024-03-08T22:14:44Z"
+  labels:
+    app.kubernetes.io/instance: rbac
+    app.kubernetes.io/managed-by: Helms
+    app.kubernetes.io/name: ichp-rbac
+    app.kubernetes.io/version: 1.16.0
+    helm.sh/chart: ichp-rbac-0.1.0
+  name: ichp-project-debugger
+  resourceVersion: "114538"
+  uid: 6d3db2d2-b3d3-4021-969c-88fa4e85d159
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  - pods/attach
+  - pods/exec
+  - pods/portforward
+  - pods/proxy
+  verbs:
+  - create
+  - delete
+  - deletecollection
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - pods/log
+  - pods/status
+  verbs:
+  - get
+  - list
+  - watch

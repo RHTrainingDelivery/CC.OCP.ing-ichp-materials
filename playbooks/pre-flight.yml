@@ -48,4 +48,14 @@
       tags:
         - prep
         - deploy
+    # Ensure RBAC resources (ClusterRoles and Groups) are there.
+    - include_role:
+        name: setup-rbac
+        apply:
+          tags:
+            - prep
+            - setup
+      tags:
+        - prep
+        - setup
 ...
