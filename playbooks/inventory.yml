@@ -25,6 +25,15 @@ all:
         namespace: metallb-system
         desired_csv: metallb-operator.v4.16.0-202507221936
         og_namespaces: []
+        approval: Manual
+      - catalog: redhat-operators
+        package: rhbk-operator
+        channel: stable-v26.2
+        namespace: keycloak
+        desired_csv: rhbk-operator.v26.2.7-opr.1
+        og_namespaces:
+          - keycloak
+        approval: Manual
 
     # Some cleanup here.
     removed_operators:

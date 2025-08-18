@@ -37,7 +37,7 @@
         - fix
     # Re-apply any operators that have had their catalog sources changed.
     - include_role:
-        name: deploy-operator
+        name: deploy-operators
         apply:
           tags:
             - prep
