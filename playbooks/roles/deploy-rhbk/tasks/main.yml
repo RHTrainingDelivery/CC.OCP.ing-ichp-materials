@@ -31,6 +31,40 @@
 #
 # NOTE: Must have an operator deployed in that namespace prior (use deploy-operators role for that).
 #
+- name: Check if there is a namespace.
+  kubernetes.core.k8s_info:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: v1
+    kind: namespace
+    name: "{{ rhbk.namespace | default('keycloak') }}"
+  register: prereq_ns
+
+- name: Fail if not so.
+  ansible.builtin.assert:
+    that:
+      - prereq_ns.resources is defined
+      - prereq_ns.resources | length == 1
+    success_msg: "OK, namespace found."
+    fail_msg: "FATAL: namespace to deploy ({{ rhbk.namespace | default('keycloak') }}) not found. Ensure there is an operator already present."
+
+# TODO: figure this out. probably look at subscription's CSV status attribute for name or something.
+- name: Check if there is a CSV in the namespace.
+  kubernetes.core.k8s_info:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: operators.coreos.com/v1alpha1
+    kind: clusterserviceversion
+    namespace: "{{ rhbk.namespace | default('keycloak') }}"
+  register: prereq_csv
+
+# TODO: figure this out.
+- name: Fail if not so.
+  ansible.builtin.assert:
+    that:
+      - prereq_csv.resources is defined
+      - prereq_csv.resources | length > 0
+
 - name: Tech hack. Prevent anything from blowing up because rhbk is defined somewhere, but not its structured contents.
   ansible.builtin.set_fact:
     rhbk: "{{ rhbk | default({}) | combine({ 'db': {} }) }}"
