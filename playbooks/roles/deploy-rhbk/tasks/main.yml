@@ -31,8 +31,9 @@
 #   users:          users to create in realm, no default (meaning no users)
 #     - username:     required (as it is key)
 #       password:     optional, defaults to "secret"
-#       fullname:     optional, set to username if empty
 #       email:        optional, set to username@example.com if empty
+#       firstname:    optional
+#       lastname:     optional
 #   state:            present (default) or absent (removes a RHBK instance if found)
 #
 # NOTE: Use rhbk_state to override rhbk.state from command line.
