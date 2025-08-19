@@ -335,8 +335,9 @@
       until:
         - import_running.resources is defined
         - import_running.resources | length > 0
-        - import_running.resources[0].status.phase != "Pending"
-        - import_running.resources[0].status.phase != "Running"
+        - import_running.resources[0].status.phase == "Succeeded"
+      retries: 12
+      delay: 5
       when: created_import.changed
 
     - name: Wait for the Keycloak pod to restart.
