@@ -354,7 +354,7 @@
         - rhbk_running.resources is defined
         - rhbk_running.resources | length > 0
         - rhbk_running.resources[0].status.phase == "Running"
-        - (rhbk_running.resources[0].status | community.general.json_query('conditions[?type=="Ready"].status'))[0]
+        - (rhbk_running.resources[0].status | community.general.json_query('conditions[?type==`Ready`].status'))[0]
       when: created_import.changed
 
   when:
