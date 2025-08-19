@@ -1,0 +1,166 @@
+---
+# Ensures there is an OIDC identity provider configured in OpenShift, that uses
+# a client defined in RHBK deployed by the deploy-rhbk role.
+#
+# Required variables (some are reused from deploy-rhbk role):
+#
+# openshift:
+#   rhbk_client_id: the name of a client above to use for authentication
+#   (default "openshift")
+#
+# rhbk:
+#   namespace:      namespace to deploy to (keycloak)
+#   name:           name of the instance (sso)
+#   fqdn:           fqdn of the route (hostname), detected if omitted
+#   admin:          bootstrap admin credentials
+#     username:       username (rhbk)
+#     password:       password (secret)
+#   realm:          name of the realm (sample-realm)
+#   clients:[]      a list of clients to create in the realm
+#     - id:           clientId
+#       name:         client (human readable) name (client.id)
+#       secret:       the client secret, if used
+#       base_url:     the base URL for redirects and other bits
+#
+# TODO: prerequisite check:
+#   - either a fqdn or an existing keycloak resource coordinates
+#   - admin credentials
+#
+- name: Check that the ingresscontroller's defaultCertificate is set
+  k8s_info:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: operator.openshift.io/v1
+    kind: ingresscontroller
+    namespace: openshift-ingress-operator
+    name: default
+  register: ingress_ca
+
+- name: Get the router's default CA content
+  k8s_info:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: v1
+    kind: secret
+    namespace: openshift-config
+    name: "{{ ingress_ca.resources[0].spec.defaultCertificate.name }}"
+  register: ingress_ca
+
+- name: Store the CA cert as an actual fact
+  set_fact:
+    ingress_ca: "{{ ingress_ca.resources[0].data['tls.crt'] }}"
+
+- name: Check on oauth/cluster
+  k8s_info:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: config.openshift.io/v1
+    kind: oauth
+    name: cluster
+  register: cluster_auth
+
+- assert:
+    that:
+      - (cluster_auth.resources | length) == 1
+      - (cluster_auth.resources[0].spec.identityProviders | length) >= 1
+      - cluster_auth.resources[0].spec.identityProviders[0].type == "HTPasswd"
+    fail_msg: "ERROR: OpenShift cluster authentication is not configured correctly."
+    success_msg: "OK: OpenShift cluster authentication is configured correctly."
+
+- name: If there is no FQDN, check what the default domain of the cluster is.
+  kubernetes.core.k8s_info:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: operator.openshift.io/v1
+    kind: ingresscontroller
+    namespace: openshift-ingress-operator
+    name: default
+  register: default_ingress
+  when: rhbk.fqdn is not defined
+
+- name: Set a fact that reflects either the FQDN as set, or a composition of vars and default ingress info.
+  ansible.builtin.set_fact:
+    rhbk_fqdn: "{{ rhbk.fqdn | default((rhbk.name | default('sso')) + '-' + (rhbk.namespace | default('keycloak')) + '.' + default_ingress.resources[0].status.domain) }}"
+
+- name: Announce what hostname would be used.
+  ansible.builtin.debug:
+    msg: Using "https://{{ rhbk_fqdn }}" as the hostname.
+
+- name: Make certain router CA CM exists in openshift-config
+  k8s:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: v1
+    kind: configmap
+    namespace: openshift-config
+    name: sso-ingress-ca
+    definition:
+      metadata:
+        labels:
+          app: sso
+      data:
+        ca.crt: "{{ ingress_ca | string | b64decode }}"
+
+- name: Make certain client secret exists in openshift-config
+  k8s:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: v1
+    kind: secret
+    namespace: openshift-config
+    name: sso-client-secret
+    definition:
+      metadata:
+        labels:
+          app: sso
+      type: Opaque
+      data:
+        clientSecret: "{{ (rhbk | community.general.json_query('clients[?id==`' + (openshift.rhbk_client_id | default('openshift')) + '`].secret'))[0] | b64encode }}"
+
+- name: Figure out what to do with oauth/cluster - option 1
+  set_fact:
+    oauth_op: add
+    oauth_path: /spec/identityProviders/-
+  when: (cluster_auth.resources[0].spec.identityProviders | length) == 1
+
+- name: Figure out what to do with oauth/cluster - option 2
+  set_fact:
+    oauth_op: replace
+    oauth_path: /spec/identityProviders/1
+  when: (cluster_auth.resources[0].spec.identityProviders | length) == 2
+
+- name: Patch oauth/cluster
+  kubernetes.core.k8s_json_patch:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: config.openshift.io/v1
+    kind: oauth
+    name: cluster
+    patch:
+      - op: "{{ oauth_op }}"
+        path: "{{ oauth_path }}"
+        value:
+          name: oidc
+          mappingMethod: claim 
+          type: OpenID
+          openID:
+            clientID: "{{ openshift.rhbk_client_id | default('openshift') }}"
+            clientSecret: 
+              name: sso-client-secret
+            ca:
+              name: sso-ingress-ca
+            claims: 
+              preferredUsername:
+              - preferred_username
+              name:
+              - name
+              email:
+              - email
+              groups:
+              - groups
+            issuer: "https://{{ rhbk_fqdn }}/realms/{{ rhbk.realm | default('sample-realm') }}"
+
+## TODO: Wait for clusteroperator/authentication to stop progressing.
+#
+## TODO: Check that all keycloakuser (or all users?) have offline_access realm role?
+...

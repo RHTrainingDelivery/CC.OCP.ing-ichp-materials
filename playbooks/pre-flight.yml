@@ -68,4 +68,14 @@
       tags:
         - prep
         - sso
+    # Ensure OpenShift OAuth is using the Keycloak.
+    - include_role:
+        name: setup-auth
+        apply:
+          tags:
+            - prep
+            - auth
+      tags:
+        - prep
+        - auth
 ...
