@@ -327,10 +327,6 @@
         - (realm_imports.resources | length) > 0
         - (realm_imports | community.general.json_query('resources[*].metadata.name')) is contains((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-import')
 
-    - ansible.builtin.template:
-        src: templates/realm-import-template.yaml.j2
-        dest: realm-import-template.yaml
-
     # TODO: finish templating this one, introduce more settings as needed
     - name: Apply a template realm import.
       kubernetes.core.k8s:
