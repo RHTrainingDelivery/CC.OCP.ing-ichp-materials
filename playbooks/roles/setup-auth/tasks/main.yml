@@ -12,16 +12,9 @@
 #   namespace:        namespace to deploy to (keycloak)
 #   name:             name of the instance (sso)
 #   fqdn:             fqdn of the route (hostname), detected if omitted
-#   admin:            bootstrap admin credentials
-#     username:         username (rhbk)
-#     password:         password (secret)
 #   realm:            name of the realm (sample-realm)
-#   clients:[]        a list of clients to create in the realm
-#     - id:             clientId
-#       name:           client (human readable) name (client.id)
-#       secret:         the client secret, if used
-#       base_url:       the base URL for redirects and other bits
-#   groups:[]         groups to create, this time create them in OpenShift TODO
+#   clients:[]        a list of clients in the realm, must include openshift.rhbk_client_id
+#   groups:[]         groups to create, this time create them in OpenShift
 #
 # TODO: prerequisite check:
 #   - either a fqdn or an existing keycloak resource coordinates
@@ -195,4 +188,13 @@
       delay: 5
 
   when: patched_oauth.changed
+
+- name: Ensure OpenShift groups are there as well.
+  kubernetes.core.k8s:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: user.openshift.io/v1
+    kind: group
+    name: "{{ item }}"
+  loop: "{{ rhbk.groups }}"
 ...
