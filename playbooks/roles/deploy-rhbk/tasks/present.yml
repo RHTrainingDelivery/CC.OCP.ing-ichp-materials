@@ -328,6 +328,54 @@
   ansible.builtin.include_tasks:
     file: tasks/token.yml
 
+- name: Get a list of existing groups in the realm.
+  ansible.builtin.uri:
+    method: GET
+    return_content: true
+    validate_certs: false
+    url: "https://{{ rhbk_fqdn }}/admin/realms/{{ rhbk.realm | default('sample-realm') }}/groups"
+    headers:
+      Authorization: Bearer {{ admin_token }}
+      Accept: application/json
+  register: rhbk_realm_groups
+
+- name: Show what groups were found at verbosity 2+.
+  ansible.builtin.debug:
+    var: rhbk_realm_groups
+    verbosity: 2
+
+- name: Create the groups if necessary.
+  ansible.builtin.uri:
+    method: POST
+    return_content: true
+    validate_certs: false
+    url: "https://{{ rhbk_fqdn }}/admin/realms/{{ rhbk.realm | default('sample-realm') }}/groups"
+    headers:
+      Authorization: Bearer {{ admin_token }}
+      Accept: application/json
+      Content-Type: application/json
+    body_format: json
+    body: |
+      {
+        "name": "{{ item }}"
+      }
+    status_code:
+      - 200
+      - 201
+  register: created_groups
+  loop: "{{ rhbk.groups }}"
+  when:
+    - (rhbk_realm_groups.json | items2dict(key_name='name', value_name='id')).keys() is not contains(item)
+
+- name: Show what groups were created at verbosity 2+.
+  ansible.builtin.debug:
+    var: created_groups
+    verbosity: 2
+
+- name: Get a fresh bearer token.
+  ansible.builtin.include_tasks:
+    file: tasks/token.yml
+
 - name: Get a list of existing users in the realm.
   ansible.builtin.uri:
     method: GET
@@ -344,7 +392,7 @@
     var: rhbk_realm_users
     verbosity: 2
 
-- name: Create/update the users if necessary.
+- name: Create the users if necessary.
   ansible.builtin.uri:
     method: POST
     return_content: true
@@ -354,6 +402,7 @@
       Authorization: Bearer {{ admin_token }}
       Accept: application/json
       Content-Type: application/json
+    body_format: json
     body: |
       {
         "username": "{{ item.username }}",
@@ -368,7 +417,10 @@
           }
         ],
         "enabled": true,
-        "emailVerified": true
+        "emailVerified": true,
+        {% if item.groups is defined and (item.groups | length) > 0 %}
+        "groups": [ "{{ item.groups | join('", "') }}" ]
+        {% endif %}
       }
     status_code:
       - 200
