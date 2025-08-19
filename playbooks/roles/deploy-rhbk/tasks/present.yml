@@ -340,21 +340,15 @@
       delay: 5
       when: created_import.changed
 
-    - name: Wait for the Keycloak pod to restart.
-      kubernetes.core.k8s_info:
-        kubeconfig: tmp/kubeconfig-ocp4
+    - name: Wait for the Keycloak pod to become ready.
+      ansible.builtin.uri:
+        return_content: yes
         validate_certs: no
-        api_version: v1
-        kind: pod
-        namespace: "{{ rhbk.namespace | default('keycloak') }}"
-        label_selectors:
-          - app=keycloak
-      register: rhbk_running
-      until:
-        - rhbk_running.resources is defined
-        - rhbk_running.resources | length > 0
-        - rhbk_running.resources[0].status.phase == "Running"
-        - (rhbk_running.resources[0].status | community.general.json_query('conditions[?type==`Ready`].status'))[0]
+        url: "https://{{ rhbk_fqdn }}/realms/{{ rhbk.realm | default('sample-realm') }}"
+      register: rhbk_is_back
+      until: rhbk_is_back.status == 200
+      retries: 24
+      delay: 5
       when: created_import.changed
 
   when:
