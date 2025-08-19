@@ -1,6 +1,6 @@
 ---
 # remove any realm imports
-- name: If there are no realm imports, create one.
+- name: Delete any realm import for the configured realm.
   block:
     - name: Remove the template realm import.
       kubernetes.core.k8s:
@@ -23,7 +23,7 @@
     name: "{{ rhbk.name | default('sso') }}"
     state: absent
 
-- name: Check if the Keycloak service is there.
+- name: Check whether the Keycloak service exists (to remove the annotation from it).
   kubernetes.core.k8s_info:
     kubeconfig: tmp/kubeconfig-ocp4
     validate_certs: no
