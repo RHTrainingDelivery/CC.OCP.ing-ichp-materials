@@ -6,7 +6,7 @@ metadata:
 spec:
   keycloakCRName: {{ rhbk.name | default('sso') }}
   realm:
-    id: be41fdb1-be4d-431d-be3c-adb5ad3a071a
+    id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm'))) | ansible.builtin.to_uuid }}
     realm: {{ rhbk.realm | default('sample-realm') }}
     notBefore: 0
     defaultSignatureAlgorithm: RS256
@@ -54,15 +54,15 @@ spec:
     failureFactor: 30
     roles:
       realm:
-        - id: e7d9d76c-bfa9-4aa3-b67c-652fe88b1a25
+        - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-rr-offline_access') | ansible.builtin.to_uuid }}
           name: offline_access
           description: ${role_offline-access}
           composite: false
           clientRole: false
-          containerId: be41fdb1-be4d-431d-be3c-adb5ad3a071a
+          containerId: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm'))) | ansible.builtin.to_uuid }}
           attributes: {}
-        - id: 07fabbc5-4576-4ccc-985e-c0e9ef48d5b9
-          name: default-roles-ichp
+        - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-rr-default-roles-' + (rhbk.realm | default('sample-realm'))) | ansible.builtin.to_uuid }}
+          name: default-roles-{{ rhbk.realm | default('sample-realm') }}
           description: ${role_default-roles}
           composite: true
           composites:
@@ -74,81 +74,81 @@ spec:
                 - view-profile
                 - manage-account
           clientRole: false
-          containerId: be41fdb1-be4d-431d-be3c-adb5ad3a071a
+          containerId: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm'))) | ansible.builtin.to_uuid }}
           attributes: {}
-        - id: 1e3afeb8-c039-4815-868c-33bbafed28f4
+        - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-rr-uma_authorization') | ansible.builtin.to_uuid }}
           name: uma_authorization
           description: ${role_uma_authorization}
           composite: false
           clientRole: false
-          containerId: be41fdb1-be4d-431d-be3c-adb5ad3a071a
+          containerId: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm'))) | ansible.builtin.to_uuid }}
           attributes: {}
       client:
         realm-management:
-          - id: 1f2346c9-4576-40ae-b1ab-0c7895d82776
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cr-create-client') | ansible.builtin.to_uuid }}
             name: create-client
             description: ${role_create-client}
             composite: false
             clientRole: true
-            containerId: 1544ec14-3f4a-4601-8f98-a3698afb78c9
+            containerId: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-client-realm-management') | ansible.builtin.to_uuid }}
             attributes: {}
-          - id: 72effb10-55aa-4ba6-9897-7b969878b4c2
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cr-query-clients') | ansible.builtin.to_uuid }}
             name: query-clients
             description: ${role_query-clients}
             composite: false
             clientRole: true
-            containerId: 1544ec14-3f4a-4601-8f98-a3698afb78c9
+            containerId: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-client-realm-management') | ansible.builtin.to_uuid }}
             attributes: {}
-          - id: 5162b108-5ac3-43de-8a3c-b93ac6d833e1
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cr-view-identity-providers') | ansible.builtin.to_uuid }}
             name: view-identity-providers
             description: ${role_view-identity-providers}
             composite: false
             clientRole: true
-            containerId: 1544ec14-3f4a-4601-8f98-a3698afb78c9
+            containerId: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-client-realm-management') | ansible.builtin.to_uuid }}
             attributes: {}
-          - id: 4679477a-0e55-44b8-a795-f61c841dd7ea
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cr-impersonation') | ansible.builtin.to_uuid }}
             name: impersonation
             description: ${role_impersonation}
             composite: false
             clientRole: true
-            containerId: 1544ec14-3f4a-4601-8f98-a3698afb78c9
+            containerId: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-client-realm-management') | ansible.builtin.to_uuid }}
             attributes: {}
-          - id: 158932a4-ec77-48ad-b967-15d3877b302b
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cr-view-authorization') | ansible.builtin.to_uuid }}
             name: view-authorization
             description: ${role_view-authorization}
             composite: false
             clientRole: true
-            containerId: 1544ec14-3f4a-4601-8f98-a3698afb78c9
+            containerId: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-client-realm-management') | ansible.builtin.to_uuid }}
             attributes: {}
-          - id: 4728cec2-0c01-45eb-9620-a71522ef9747
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cr-view-realm') | ansible.builtin.to_uuid }}
             name: view-realm
             description: ${role_view-realm}
             composite: false
             clientRole: true
-            containerId: 1544ec14-3f4a-4601-8f98-a3698afb78c9
+            containerId: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-client-realm-management') | ansible.builtin.to_uuid }}
             attributes: {}
-          - id: ce60989a-b977-4817-8add-06050e9e1539
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cr-manage-clients') | ansible.builtin.to_uuid }}
             name: manage-clients
             description: ${role_manage-clients}
             composite: false
             clientRole: true
-            containerId: 1544ec14-3f4a-4601-8f98-a3698afb78c9
+            containerId: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-client-realm-management') | ansible.builtin.to_uuid }}
             attributes: {}
-          - id: 837fe3ea-27b4-4167-a466-645e8f738f2e
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cr-manage-users') | ansible.builtin.to_uuid }}
             name: manage-users
             description: ${role_manage-users}
             composite: false
             clientRole: true
-            containerId: 1544ec14-3f4a-4601-8f98-a3698afb78c9
+            containerId: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-client-realm-management') | ansible.builtin.to_uuid }}
             attributes: {}
-          - id: 574f9232-c48b-49fc-b24c-4f868f28ee49
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cr-query-realms') | ansible.builtin.to_uuid }}
             name: query-realms
             description: ${role_query-realms}
             composite: false
             clientRole: true
-            containerId: 1544ec14-3f4a-4601-8f98-a3698afb78c9
+            containerId: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-client-realm-management') | ansible.builtin.to_uuid }}
             attributes: {}
-          - id: 952a7293-2733-4d64-a5ba-0b98d39f1a8c
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cr-view-users') | ansible.builtin.to_uuid }}
             name: view-users
             description: ${role_view-users}
             composite: true
@@ -158,9 +158,9 @@ spec:
                   - query-groups
                   - query-users
             clientRole: true
-            containerId: 1544ec14-3f4a-4601-8f98-a3698afb78c9
+            containerId: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-client-realm-management') | ansible.builtin.to_uuid }}
             attributes: {}
-          - id: 58e37045-4a6a-4292-b849-b458fe15272e
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cr-realm-admin') | ansible.builtin.to_uuid }}
             name: realm-admin
             description: ${role_realm-admin}
             composite: true
@@ -186,44 +186,44 @@ spec:
                   - view-events
                   - query-users
             clientRole: true
-            containerId: 1544ec14-3f4a-4601-8f98-a3698afb78c9
+            containerId: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-client-realm-management') | ansible.builtin.to_uuid }}
             attributes: {}
-          - id: 180792d6-17b5-4369-8d9f-5e9d7c1abecd
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cr-manage-realm') | ansible.builtin.to_uuid }}
             name: manage-realm
             description: ${role_manage-realm}
             composite: false
             clientRole: true
-            containerId: 1544ec14-3f4a-4601-8f98-a3698afb78c9
+            containerId: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-client-realm-management') | ansible.builtin.to_uuid }}
             attributes: {}
-          - id: 865608a3-b3c8-492d-a99f-35acbbc95df5
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cr-manage-authorization') | ansible.builtin.to_uuid }}
             name: manage-authorization
             description: ${role_manage-authorization}
             composite: false
             clientRole: true
-            containerId: 1544ec14-3f4a-4601-8f98-a3698afb78c9
+            containerId: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-client-realm-management') | ansible.builtin.to_uuid }}
             attributes: {}
-          - id: d67afc38-e298-48ae-883d-84b90e2acc87
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cr-query-groups') | ansible.builtin.to_uuid }}
             name: query-groups
             description: ${role_query-groups}
             composite: false
             clientRole: true
-            containerId: 1544ec14-3f4a-4601-8f98-a3698afb78c9
+            containerId: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-client-realm-management') | ansible.builtin.to_uuid }}
             attributes: {}
-          - id: aa372a48-8435-4923-b125-6bae2e735a75
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cr-manage-events') | ansible.builtin.to_uuid }}
             name: manage-events
             description: ${role_manage-events}
             composite: false
             clientRole: true
-            containerId: 1544ec14-3f4a-4601-8f98-a3698afb78c9
+            containerId: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-client-realm-management') | ansible.builtin.to_uuid }}
             attributes: {}
-          - id: ca44e368-d20a-445b-b5db-1a79f4551cf7
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cr-manage-identity-providers') | ansible.builtin.to_uuid }}
             name: manage-identity-providers
             description: ${role_manage-identity-providers}
             composite: false
             clientRole: true
-            containerId: 1544ec14-3f4a-4601-8f98-a3698afb78c9
+            containerId: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-client-realm-management') | ansible.builtin.to_uuid }}
             attributes: {}
-          - id: 58dfbd59-c730-46ad-a0ce-e4712b130133
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cr-view-clients') | ansible.builtin.to_uuid }}
             name: view-clients
             description: ${role_view-clients}
             composite: true
@@ -232,43 +232,45 @@ spec:
                 realm-management:
                   - query-clients
             clientRole: true
-            containerId: 1544ec14-3f4a-4601-8f98-a3698afb78c9
+            containerId: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-client-realm-management') | ansible.builtin.to_uuid }}
             attributes: {}
-          - id: e67476ef-5630-42d2-9ec7-9cda35a6ff03
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cr-query-users') | ansible.builtin.to_uuid }}
             name: query-users
             description: ${role_query-users}
             composite: false
             clientRole: true
-            containerId: 1544ec14-3f4a-4601-8f98-a3698afb78c9
+            containerId: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-client-realm-management') | ansible.builtin.to_uuid }}
             attributes: {}
-          - id: edb64667-b054-4f32-80b3-19cb8dab52a4
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cr-view-events') | ansible.builtin.to_uuid }}
             name: view-events
             description: ${role_view-events}
             composite: false
             clientRole: true
-            containerId: 1544ec14-3f4a-4601-8f98-a3698afb78c9
+            containerId: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-client-realm-management') | ansible.builtin.to_uuid }}
             attributes: {}
         security-admin-console: []
-        openshift: []
+{% for client in rhbk.clients %}
+        {{ client.id }}: []
+{% endfor %}
         admin-cli: []
         account-console: []
         broker:
-          - id: cfa9110f-d928-43e5-b71f-0970206dc7c7
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-br-read-token') | ansible.builtin.to_uuid }}
             name: read-token
             description: ${role_read-token}
             composite: false
             clientRole: true
-            containerId: a18de74b-25e5-4225-bbab-743752fc2f77
+            containerId: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-client-broker') | ansible.builtin.to_uuid }}
             attributes: {}
         account:
-          - id: 0a363300-38e4-4477-b0eb-b29f58506d81
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-ar-delete-account') | ansible.builtin.to_uuid }}
             name: delete-account
             description: ${role_delete-account}
             composite: false
             clientRole: true
-            containerId: 310611db-29b6-4df6-806f-2ffb8ec6d1d0
+            containerId: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-client-account') | ansible.builtin.to_uuid }}
             attributes: {}
-          - id: 2c2d6b40-bd69-4561-802d-97b8dcf08a9d
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-ar-manage-consent') | ansible.builtin.to_uuid }}
             name: manage-consent
             description: ${role_manage-consent}
             composite: true
@@ -277,16 +279,16 @@ spec:
                 account:
                   - view-consent
             clientRole: true
-            containerId: 310611db-29b6-4df6-806f-2ffb8ec6d1d0
+            containerId: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-client-account') | ansible.builtin.to_uuid }}
             attributes: {}
-          - id: 7b66ea32-a92c-4152-9435-b36d5c998bf4
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-ar-view-profile') | ansible.builtin.to_uuid }}
             name: view-profile
             description: ${role_view-profile}
             composite: false
             clientRole: true
-            containerId: 310611db-29b6-4df6-806f-2ffb8ec6d1d0
+            containerId: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-client-account') | ansible.builtin.to_uuid }}
             attributes: {}
-          - id: 26cc6356-b198-498a-8fd5-b6c55266044e
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-ar-manage-account') | ansible.builtin.to_uuid }}
             name: manage-account
             description: ${role_manage-account}
             composite: true
@@ -295,44 +297,44 @@ spec:
                 account:
                   - manage-account-links
             clientRole: true
-            containerId: 310611db-29b6-4df6-806f-2ffb8ec6d1d0
+            containerId: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-client-account') | ansible.builtin.to_uuid }}
             attributes: {}
-          - id: 7d07a1ab-7994-47d8-88ad-5c91ea422722
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-ar-manage-account-links') | ansible.builtin.to_uuid }}
             name: manage-account-links
             description: ${role_manage-account-links}
             composite: false
             clientRole: true
-            containerId: 310611db-29b6-4df6-806f-2ffb8ec6d1d0
+            containerId: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-client-account') | ansible.builtin.to_uuid }}
             attributes: {}
-          - id: ecc23404-4281-4c90-aed4-375fd0fc0d37
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-ar-view-applications') | ansible.builtin.to_uuid }}
             name: view-applications
             description: ${role_view-applications}
             composite: false
             clientRole: true
-            containerId: 310611db-29b6-4df6-806f-2ffb8ec6d1d0
+            containerId: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-client-account') | ansible.builtin.to_uuid }}
             attributes: {}
-          - id: 1f3da55f-0458-496b-b9f2-f10496d28ab5
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-ar-view-groups') | ansible.builtin.to_uuid }}
             name: view-groups
             description: ${role_view-groups}
             composite: false
             clientRole: true
-            containerId: 310611db-29b6-4df6-806f-2ffb8ec6d1d0
+            containerId: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-client-account') | ansible.builtin.to_uuid }}
             attributes: {}
-          - id: 5aaab517-1ce9-465d-abc8-936cffca1bc3
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-ar-view-consent') | ansible.builtin.to_uuid }}
             name: view-consent
             description: ${role_view-consent}
             composite: false
             clientRole: true
-            containerId: 310611db-29b6-4df6-806f-2ffb8ec6d1d0
+            containerId: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-client-account') | ansible.builtin.to_uuid }}
             attributes: {}
     groups: []
     defaultRole:
-      id: 07fabbc5-4576-4ccc-985e-c0e9ef48d5b9
-      name: default-roles-ichp
+      id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-default-roles-' + (rhbk.realm | default('sample-realm'))) | ansible.builtin.to_uuid }}
+      name: default-roles-{{ (rhbk.realm | default('sample-realm')) }}
       description: ${role_default-roles}
       composite: true
       clientRole: false
-      containerId: be41fdb1-be4d-431d-be3c-adb5ad3a071a
+      containerId: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm'))) | ansible.builtin.to_uuid }}
     requiredCredentials:
       - password
     otpPolicyType: totp
@@ -384,17 +386,17 @@ spec:
             - manage-account
             - view-groups
     clients:
-      - id: 310611db-29b6-4df6-806f-2ffb8ec6d1d0
+      - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-client-account') | ansible.builtin.to_uuid }}
         clientId: account
         name: ${client_account}
         rootUrl: ${authBaseUrl}
-        baseUrl: /realms/ichp/account/
+        baseUrl: /realms/{{ rhbk.realm | default('sample-realm') }}/account/
         surrogateAuthRequired: false
         enabled: true
         alwaysDisplayInConsole: false
         clientAuthenticatorType: client-secret
         redirectUris:
-          - /realms/ichp/account/*
+          - /realms/{{ rhbk.realm | default('sample-realm') }}/account/*
         webOrigins: []
         notBefore: 0
         bearerOnly: false
@@ -425,17 +427,17 @@ spec:
           - organization
           - offline_access
           - microprofile-jwt
-      - id: 26ee53a2-3acc-4f86-bb03-8ef53f4c4619
+      - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-client-account-console') | ansible.builtin.to_uuid }}
         clientId: account-console
         name: ${client_account-console}
         rootUrl: ${authBaseUrl}
-        baseUrl: /realms/ichp/account/
+        baseUrl: /realms/{{ rhbk.realm | default('sample-realm') }}/account/
         surrogateAuthRequired: false
         enabled: true
         alwaysDisplayInConsole: false
         clientAuthenticatorType: client-secret
         redirectUris:
-          - /realms/ichp/account/*
+          - /realms/{{ rhbk.realm | default('sample-realm') }}/account/*
         webOrigins: []
         notBefore: 0
         bearerOnly: false
@@ -455,7 +457,7 @@ spec:
         fullScopeAllowed: false
         nodeReRegistrationTimeout: 0
         protocolMappers:
-          - id: d5f30f3a-684a-41ec-b423-70179bcb7550
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-client-account-console-pm-audience-resolve') | ansible.builtin.to_uuid }}
             name: audience resolve
             protocol: openid-connect
             protocolMapper: oidc-audience-resolve-mapper
@@ -474,7 +476,7 @@ spec:
           - organization
           - offline_access
           - microprofile-jwt
-      - id: de8c83c0-f8d4-4ea4-9243-3c8eb8e3320b
+      - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-client-admin-cli') | ansible.builtin.to_uuid }}
         clientId: admin-cli
         name: ${client_admin-cli}
         surrogateAuthRequired: false
@@ -512,7 +514,7 @@ spec:
           - organization
           - offline_access
           - microprofile-jwt
-      - id: a18de74b-25e5-4225-bbab-743752fc2f77
+      - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-client-broker') | ansible.builtin.to_uuid }}
         clientId: broker
         name: ${client_broker}
         surrogateAuthRequired: false
@@ -549,22 +551,23 @@ spec:
           - organization
           - offline_access
           - microprofile-jwt
-      - id: 95b6c1c6-3787-4442-b512-527ff51d2670
-        clientId: openshift
-        name: "OpenShift OIDC Client"
+{% for client in rhbk.clients %}
+      - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-client-' + client.id) | ansible.builtin.to_uuid }}
+        clientId: {{ client.id }}
+        name: "{{ client.name | default(client.id) }}"
         description: ""
-        rootUrl: https://oauth-openshift.apps.ocp4.example.com
-        adminUrl: https://oauth-openshift.apps.ocp4.example.com
+        rootUrl: {{ client.base_url }}
+        adminUrl: {{ client.base_url }}
         baseUrl: ""
         surrogateAuthRequired: false
         enabled: true
         alwaysDisplayInConsole: false
         clientAuthenticatorType: client-secret
-        secret: 'verysecret'
+        secret: '{{ client.secret | default(omit) }}'
         redirectUris:
-          - https://oauth-openshift.apps.ocp4.example.com/*
+          - {{ client.base_url }}/*
         webOrigins:
-          - https://oauth-openshift.apps.ocp4.example.com
+          - {{ client.base_url }}
         notBefore: 0
         bearerOnly: false
         consentRequired: false
@@ -615,7 +618,8 @@ spec:
           - organization
           - offline_access
           - microprofile-jwt
-      - id: 1544ec14-3f4a-4601-8f98-a3698afb78c9
+{% endfor %}
+      - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-client-realm-management') | ansible.builtin.to_uuid }}
         clientId: realm-management
         name: ${client_realm-management}
         surrogateAuthRequired: false
@@ -652,17 +656,17 @@ spec:
           - organization
           - offline_access
           - microprofile-jwt
-      - id: 64228e4f-5e45-43e2-840d-3ea67fbb1356
+      - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-client-security-admin-console') | ansible.builtin.to_uuid }}
         clientId: security-admin-console
         name: ${client_security-admin-console}
         rootUrl: ${authAdminUrl}
-        baseUrl: /admin/ichp/console/
+        baseUrl: /admin/{{ rhbk.realm | default('sample-realm') }}/console/
         surrogateAuthRequired: false
         enabled: true
         alwaysDisplayInConsole: false
         clientAuthenticatorType: client-secret
         redirectUris:
-          - /admin/ichp/console/*
+          - /admin/{{ rhbk.realm | default('sample-realm') }}/console/*
         webOrigins:
           - +
         notBefore: 0
@@ -684,7 +688,7 @@ spec:
         fullScopeAllowed: true
         nodeReRegistrationTimeout: 0
         protocolMappers:
-          - id: 05393481-79e3-4c5d-be72-b21fa1b2cf6f
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-client-security-admin-console-pm-locale') | ansible.builtin.to_uuid }}
             name: locale
             protocol: openid-connect
             protocolMapper: oidc-usermodel-attribute-mapper
@@ -711,7 +715,7 @@ spec:
           - offline_access
           - microprofile-jwt
     clientScopes:
-      - id: da242fab-a8d0-4aa0-9e10-8212440b4b3b
+      - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cscope-roles') | ansible.builtin.to_uuid }}
         name: roles
         description: OpenID Connect scope for add user roles to the access token
         protocol: openid-connect
@@ -720,7 +724,7 @@ spec:
           consent.screen.text: ${rolesScopeConsentText}
           display.on.consent.screen: "true"
         protocolMappers:
-          - id: 8ae03c9d-7b0b-4c41-baaa-54327e15d4fe
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cscope-roles-pm-client-roles') | ansible.builtin.to_uuid }}
             name: client roles
             protocol: openid-connect
             protocolMapper: oidc-usermodel-client-role-mapper
@@ -732,7 +736,7 @@ spec:
               claim.name: resource_access.${client_id}.roles
               jsonType.label: String
               multivalued: "true"
-          - id: 7ed4a8f3-73ef-4c76-a68c-2abdb7111505
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cscope-roles-pm-realm-roles') | ansible.builtin.to_uuid }}
             name: realm roles
             protocol: openid-connect
             protocolMapper: oidc-usermodel-realm-role-mapper
@@ -744,7 +748,7 @@ spec:
               claim.name: realm_access.roles
               jsonType.label: String
               multivalued: "true"
-          - id: a354f9c9-579d-44f3-9d90-6fbbe5739c50
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cscope-roles-pm-audience-resolve') | ansible.builtin.to_uuid }}
             name: audience resolve
             protocol: openid-connect
             protocolMapper: oidc-audience-resolve-mapper
@@ -752,7 +756,7 @@ spec:
             config:
               introspection.token.claim: "true"
               access.token.claim: "true"
-      - id: 4a60daed-92f6-4646-80bc-78e8bb5097a5
+      - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cscope-service-account') | ansible.builtin.to_uuid }}
         name: service_account
         description: Specific scope for a client enabled for service accounts
         protocol: openid-connect
@@ -760,7 +764,7 @@ spec:
           include.in.token.scope: "false"
           display.on.consent.screen: "false"
         protocolMappers:
-          - id: c6ba4bf2-70c9-429d-8f11-7e7a94b6072c
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cscope-service-account-pm-client-host') | ansible.builtin.to_uuid }}
             name: Client Host
             protocol: openid-connect
             protocolMapper: oidc-usersessionmodel-note-mapper
@@ -772,7 +776,7 @@ spec:
               access.token.claim: "true"
               claim.name: clientHost
               jsonType.label: String
-          - id: 8afd36a6-b5e9-42a8-96be-d64cd70ecc1e
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cscope-service-account-pm-client-ip') | ansible.builtin.to_uuid }}
             name: Client IP Address
             protocol: openid-connect
             protocolMapper: oidc-usersessionmodel-note-mapper
@@ -784,7 +788,7 @@ spec:
               access.token.claim: "true"
               claim.name: clientAddress
               jsonType.label: String
-          - id: aba0ce6b-a46a-4beb-9f24-364fbc2d7f72
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cscope-service-account-pm-client-id') | ansible.builtin.to_uuid }}
             name: Client ID
             protocol: openid-connect
             protocolMapper: oidc-usersessionmodel-note-mapper
@@ -796,7 +800,7 @@ spec:
               access.token.claim: "true"
               claim.name: client_id
               jsonType.label: String
-      - id: 308782b7-ab41-49ff-9e1a-de9a22b252df
+      - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cscope-organization') | ansible.builtin.to_uuid }}
         name: organization
         description: Additional claims about the organization a subject belongs to
         protocol: openid-connect
@@ -805,7 +809,7 @@ spec:
           consent.screen.text: ${organizationScopeConsentText}
           display.on.consent.screen: "true"
         protocolMappers:
-          - id: a49de63c-2c91-45b7-9f87-6646ee2a8560
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cscope-organization-pm-organization') | ansible.builtin.to_uuid }}
             name: organization
             protocol: openid-connect
             protocolMapper: oidc-organization-membership-mapper
@@ -817,7 +821,7 @@ spec:
               claim.name: organization
               jsonType.label: String
               multivalued: "true"
-      - id: ddc162b7-ae46-469a-88da-8e6fd882fef2
+      - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cscope-mprof-jwt') | ansible.builtin.to_uuid }}
         name: microprofile-jwt
         description: Microprofile - JWT built-in scope
         protocol: openid-connect
@@ -825,7 +829,7 @@ spec:
           include.in.token.scope: "true"
           display.on.consent.screen: "false"
         protocolMappers:
-          - id: 0aceceda-de29-4dfd-b282-79c1a4b1f01e
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cscope-mprof-jwt-pm-upn') | ansible.builtin.to_uuid }}
             name: upn
             protocol: openid-connect
             protocolMapper: oidc-usermodel-attribute-mapper
@@ -838,7 +842,7 @@ spec:
               access.token.claim: "true"
               claim.name: upn
               jsonType.label: String
-          - id: bbacf398-7509-43c2-a6a2-f72b7a151dde
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cscope-mprof-jwt-pm-groups') | ansible.builtin.to_uuid }}
             name: groups
             protocol: openid-connect
             protocolMapper: oidc-usermodel-realm-role-mapper
@@ -851,20 +855,20 @@ spec:
               access.token.claim: "true"
               claim.name: groups
               jsonType.label: String
-      - id: 52d6d297-de58-47a4-8272-858cb1957dc5
+      - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cscope-saml-org') | ansible.builtin.to_uuid }}
         name: saml_organization
         description: Organization Membership
         protocol: saml
         attributes:
           display.on.consent.screen: "false"
         protocolMappers:
-          - id: 53757c9d-732c-4274-95ff-fb36bcb68612
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cscope-saml-org-pm-organization') | ansible.builtin.to_uuid }}
             name: organization
             protocol: saml
             protocolMapper: saml-organization-membership-mapper
             consentRequired: false
             config: {}
-      - id: b0f1af41-d217-47e2-ad46-90d333fc933c
+      - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cscope-oidc') | ansible.builtin.to_uuid }}
         name: acr
         description: OpenID Connect scope for add acr (authentication context class reference) to the token
         protocol: openid-connect
@@ -872,7 +876,7 @@ spec:
           include.in.token.scope: "false"
           display.on.consent.screen: "false"
         protocolMappers:
-          - id: f511c418-885e-4def-a61c-46a2036ea16d
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cscope-oidc-pm-acr-loa-level') | ansible.builtin.to_uuid }}
             name: acr loa level
             protocol: openid-connect
             protocolMapper: oidc-acr-mapper
@@ -881,7 +885,7 @@ spec:
               id.token.claim: "true"
               access.token.claim: "true"
               introspection.token.claim: "true"
-      - id: 3d18a857-3e55-46f8-85e8-ff9757288d6a
+      - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cscope-email') | ansible.builtin.to_uuid }}
         name: email
         description: 'OpenID Connect built-in scope: email'
         protocol: openid-connect
@@ -890,7 +894,7 @@ spec:
           consent.screen.text: ${emailScopeConsentText}
           display.on.consent.screen: "true"
         protocolMappers:
-          - id: 30275ad3-3d25-4e8a-a5ed-696135bb4aa3
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cscope-email-pm-email-vrfd') | ansible.builtin.to_uuid }}
             name: email verified
             protocol: openid-connect
             protocolMapper: oidc-usermodel-property-mapper
@@ -903,7 +907,7 @@ spec:
               access.token.claim: "true"
               claim.name: email_verified
               jsonType.label: boolean
-          - id: b57b56af-774b-4529-880d-15cff8fc2d89
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cscope-email-pm-email') | ansible.builtin.to_uuid }}
             name: email
             protocol: openid-connect
             protocolMapper: oidc-usermodel-attribute-mapper
@@ -916,7 +920,7 @@ spec:
               access.token.claim: "true"
               claim.name: email
               jsonType.label: String
-      - id: b368511f-a4c6-431b-a8f9-3c807fe5864c
+      - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cscope-role-list') | ansible.builtin.to_uuid }}
         name: role_list
         description: SAML role list
         protocol: saml
@@ -924,7 +928,7 @@ spec:
           consent.screen.text: ${samlRoleListScopeConsentText}
           display.on.consent.screen: "true"
         protocolMappers:
-          - id: 8acaaa00-bfce-43aa-b07b-35eb598c5c08
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cscope-role-list-pm-role-list') | ansible.builtin.to_uuid }}
             name: role list
             protocol: saml
             protocolMapper: saml-role-list-mapper
@@ -933,7 +937,7 @@ spec:
               single: "false"
               attribute.nameformat: Basic
               attribute.name: Role
-      - id: 65b918f8-4285-4874-8887-55abd5e48815
+      - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cscope-phone') | ansible.builtin.to_uuid }}
         name: phone
         description: 'OpenID Connect built-in scope: phone'
         protocol: openid-connect
@@ -942,7 +946,7 @@ spec:
           consent.screen.text: ${phoneScopeConsentText}
           display.on.consent.screen: "true"
         protocolMappers:
-          - id: 2817b50a-9e0a-4333-b9cb-8bd7347bde4c
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cscope-phone-pm-phnum') | ansible.builtin.to_uuid }}
             name: phone number
             protocol: openid-connect
             protocolMapper: oidc-usermodel-attribute-mapper
@@ -955,7 +959,7 @@ spec:
               access.token.claim: "true"
               claim.name: phone_number
               jsonType.label: String
-          - id: 51c1fe54-8aa6-40ef-9dcf-8296698aef28
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cscope-phone-pm-phnum-vrfd') | ansible.builtin.to_uuid }}
             name: phone number verified
             protocol: openid-connect
             protocolMapper: oidc-usermodel-attribute-mapper
@@ -968,7 +972,7 @@ spec:
               access.token.claim: "true"
               claim.name: phone_number_verified
               jsonType.label: boolean
-      - id: cbeecdb8-59d2-4ef0-8f5b-b26485b61184
+      - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cscope-address') | ansible.builtin.to_uuid }}
         name: address
         description: 'OpenID Connect built-in scope: address'
         protocol: openid-connect
@@ -977,7 +981,7 @@ spec:
           consent.screen.text: ${addressScopeConsentText}
           display.on.consent.screen: "true"
         protocolMappers:
-          - id: a2ccf3d2-08f6-4874-b731-eb71c505d083
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cscope-address-pm-address') | ansible.builtin.to_uuid }}
             name: address
             protocol: openid-connect
             protocolMapper: oidc-address-mapper
@@ -993,7 +997,7 @@ spec:
               user.attribute.region: region
               access.token.claim: "true"
               user.attribute.locality: locality
-      - id: 2a6f8645-780c-4a18-b462-fb5ccab2c111
+      - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cscope-basic') | ansible.builtin.to_uuid }}
         name: basic
         description: OpenID Connect scope for add all basic claims to the token
         protocol: openid-connect
@@ -1001,7 +1005,7 @@ spec:
           include.in.token.scope: "false"
           display.on.consent.screen: "false"
         protocolMappers:
-          - id: 68f5e45f-6ca8-465e-9a5c-f0964b464636
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cscope-basic-pm-sub') | ansible.builtin.to_uuid }}
             name: sub
             protocol: openid-connect
             protocolMapper: oidc-sub-mapper
@@ -1009,7 +1013,7 @@ spec:
             config:
               introspection.token.claim: "true"
               access.token.claim: "true"
-          - id: e5b82ee8-7491-4a6c-b236-313f4f1b62f9
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cscope-basic-pm-auth-time') | ansible.builtin.to_uuid }}
             name: auth_time
             protocol: openid-connect
             protocolMapper: oidc-usersessionmodel-note-mapper
@@ -1021,14 +1025,14 @@ spec:
               access.token.claim: "true"
               claim.name: auth_time
               jsonType.label: long
-      - id: e6cbf632-eba3-4658-a241-d8caf53e1a8c
+      - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cscope-offline') | ansible.builtin.to_uuid }}
         name: offline_access
         description: 'OpenID Connect built-in scope: offline_access'
         protocol: openid-connect
         attributes:
           consent.screen.text: ${offlineAccessScopeConsentText}
           display.on.consent.screen: "true"
-      - id: 8decc1d1-d9e0-4011-b4a4-24d0e82ca51f
+      - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cscope-web-origins') | ansible.builtin.to_uuid }}
         name: web-origins
         description: OpenID Connect scope for add allowed web origins to the access token
         protocol: openid-connect
@@ -1037,7 +1041,7 @@ spec:
           consent.screen.text: ""
           display.on.consent.screen: "false"
         protocolMappers:
-          - id: 5bec22c6-4887-4332-8a1e-314a6d27e7da
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cscope-web-origins-pm-allowed-origins') | ansible.builtin.to_uuid }}
             name: allowed web origins
             protocol: openid-connect
             protocolMapper: oidc-allowed-origins-mapper
@@ -1045,7 +1049,7 @@ spec:
             config:
               access.token.claim: "true"
               introspection.token.claim: "true"
-      - id: c43c0a6a-7f94-4e09-a953-3fa44ebe3040
+      - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cscope-profile') | ansible.builtin.to_uuid }}
         name: profile
         description: 'OpenID Connect built-in scope: profile'
         protocol: openid-connect
@@ -1054,7 +1058,7 @@ spec:
           consent.screen.text: ${profileScopeConsentText}
           display.on.consent.screen: "true"
         protocolMappers:
-          - id: b6bf723a-1ae6-45e4-a722-2f9d4e9e5903
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cscope-profile-pm-website') | ansible.builtin.to_uuid }}
             name: website
             protocol: openid-connect
             protocolMapper: oidc-usermodel-attribute-mapper
@@ -1067,7 +1071,7 @@ spec:
               access.token.claim: "true"
               claim.name: website
               jsonType.label: String
-          - id: 8a16228a-05fd-4707-b5bb-0e25b64d8958
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cscope-profile-pm-full-name') | ansible.builtin.to_uuid }}
             name: full name
             protocol: openid-connect
             protocolMapper: oidc-full-name-mapper
@@ -1077,7 +1081,7 @@ spec:
               introspection.token.claim: "true"
               access.token.claim: "true"
               userinfo.token.claim: "true"
-          - id: 37a167d2-747d-4f5d-9f58-204028f56b7d
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cscope-profile-pm-locale') | ansible.builtin.to_uuid }}
             name: locale
             protocol: openid-connect
             protocolMapper: oidc-usermodel-attribute-mapper
@@ -1090,7 +1094,7 @@ spec:
               access.token.claim: "true"
               claim.name: locale
               jsonType.label: String
-          - id: 8271c267-970e-4091-a010-45521b955c01
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cscope-profile-pm-picture') | ansible.builtin.to_uuid }}
             name: picture
             protocol: openid-connect
             protocolMapper: oidc-usermodel-attribute-mapper
@@ -1103,7 +1107,7 @@ spec:
               access.token.claim: "true"
               claim.name: picture
               jsonType.label: String
-          - id: 723390b8-7670-43b5-84c9-b67c82703fce
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cscope-profile-given-name') | ansible.builtin.to_uuid }}
             name: given name
             protocol: openid-connect
             protocolMapper: oidc-usermodel-attribute-mapper
@@ -1116,7 +1120,7 @@ spec:
               access.token.claim: "true"
               claim.name: given_name
               jsonType.label: String
-          - id: cdff8fc1-bc4a-47da-84a5-85fb12c53461
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cscope-profile-pm-profile') | ansible.builtin.to_uuid }}
             name: profile
             protocol: openid-connect
             protocolMapper: oidc-usermodel-attribute-mapper
@@ -1129,7 +1133,7 @@ spec:
               access.token.claim: "true"
               claim.name: profile
               jsonType.label: String
-          - id: 312ee990-1e0c-4481-88f4-f85fb4ff15f4
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cscope-profile-pm-birthdate') | ansible.builtin.to_uuid }}
             name: birthdate
             protocol: openid-connect
             protocolMapper: oidc-usermodel-attribute-mapper
@@ -1142,7 +1146,7 @@ spec:
               access.token.claim: "true"
               claim.name: birthdate
               jsonType.label: String
-          - id: 745656de-2692-4e59-80fe-fb59479ea17e
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cscope-profile-pm-zoneinfo') | ansible.builtin.to_uuid }}
             name: zoneinfo
             protocol: openid-connect
             protocolMapper: oidc-usermodel-attribute-mapper
@@ -1155,7 +1159,7 @@ spec:
               access.token.claim: "true"
               claim.name: zoneinfo
               jsonType.label: String
-          - id: fb78c202-dade-4f93-a5f7-5e5f0d98ef9e
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cscope-profile-pm-family-name') | ansible.builtin.to_uuid }}
             name: family name
             protocol: openid-connect
             protocolMapper: oidc-usermodel-attribute-mapper
@@ -1168,7 +1172,7 @@ spec:
               access.token.claim: "true"
               claim.name: family_name
               jsonType.label: String
-          - id: a89512e1-d227-4286-86ed-f736bdbb1a4d
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cscope-profile-pm-username') | ansible.builtin.to_uuid }}
             name: username
             protocol: openid-connect
             protocolMapper: oidc-usermodel-attribute-mapper
@@ -1181,7 +1185,7 @@ spec:
               access.token.claim: "true"
               claim.name: preferred_username
               jsonType.label: String
-          - id: ab4ffdc5-6497-471a-b737-b6c3c712e168
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cscope-profile-pm-nickname') | ansible.builtin.to_uuid }}
             name: nickname
             protocol: openid-connect
             protocolMapper: oidc-usermodel-attribute-mapper
@@ -1194,7 +1198,7 @@ spec:
               access.token.claim: "true"
               claim.name: nickname
               jsonType.label: String
-          - id: fa71f97d-38b6-413d-898a-57db48cac373
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cscope-profile-pm-middle-name') | ansible.builtin.to_uuid }}
             name: middle name
             protocol: openid-connect
             protocolMapper: oidc-usermodel-attribute-mapper
@@ -1207,7 +1211,7 @@ spec:
               access.token.claim: "true"
               claim.name: middle_name
               jsonType.label: String
-          - id: fb1dce92-54c9-4b16-bcd3-50a49e17264c
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cscope-profile-pm-gender') | ansible.builtin.to_uuid }}
             name: gender
             protocol: openid-connect
             protocolMapper: oidc-usermodel-attribute-mapper
@@ -1220,7 +1224,7 @@ spec:
               access.token.claim: "true"
               claim.name: gender
               jsonType.label: String
-          - id: aedd6129-df66-4a0b-bc6b-aa25ae7289f7
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-cscope-profile-pm-updated-at') | ansible.builtin.to_uuid }}
             name: updated at
             protocol: openid-connect
             protocolMapper: oidc-usermodel-attribute-mapper
@@ -1267,7 +1271,7 @@ spec:
     identityProviderMappers: []
     components:
       org.keycloak.services.clientregistration.policy.ClientRegistrationPolicy:
-        - id: ba4ccc2d-b4af-4661-b02e-6730f779575f
+        - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-regpol-max-clients') | ansible.builtin.to_uuid }}
           name: Max Clients Limit
           providerId: max-clients
           subType: anonymous
@@ -1275,13 +1279,13 @@ spec:
           config:
             max-clients:
               - "200"
-        - id: b85a6a84-7340-424e-81dc-6f3547aa22e1
+        - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-regpol-fullscope') | ansible.builtin.to_uuid }}
           name: Full Scope Disabled
           providerId: scope
           subType: anonymous
           subComponents: {}
           config: {}
-        - id: 4c301a96-61e9-4786-89cb-4eaf2677028f
+        - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-regpol-allowed-protomap-anon') | ansible.builtin.to_uuid }}
           name: Allowed Protocol Mapper Types
           providerId: allowed-protocol-mappers
           subType: anonymous
@@ -1296,7 +1300,7 @@ spec:
               - oidc-full-name-mapper
               - saml-role-list-mapper
               - oidc-usermodel-attribute-mapper
-        - id: e3f990bf-5977-4b35-a3dd-b8ac9b26061c
+        - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-regpol-trusted-hosts') | ansible.builtin.to_uuid }}
           name: Trusted Hosts
           providerId: trusted-hosts
           subType: anonymous
@@ -1306,7 +1310,7 @@ spec:
               - "true"
             client-uris-must-match:
               - "true"
-        - id: d2ebfe03-3f09-42b7-8c3c-1ca5caba76ff
+        - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-regpol-allowed-protomap-auth') | ansible.builtin.to_uuid }}
           name: Allowed Protocol Mapper Types
           providerId: allowed-protocol-mappers
           subType: authenticated
@@ -1321,13 +1325,13 @@ spec:
               - oidc-usermodel-attribute-mapper
               - oidc-full-name-mapper
               - oidc-usermodel-property-mapper
-        - id: f00c2333-6f60-4c51-8f31-2a1a14cc1a18
+        - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-regpol-consentreq') | ansible.builtin.to_uuid }}
           name: Consent Required
           providerId: consent-required
           subType: anonymous
           subComponents: {}
           config: {}
-        - id: a5188a3a-9351-4098-bb13-14b8b56c9370
+        - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-regpol-allowed-cliscope-anon') | ansible.builtin.to_uuid }}
           name: Allowed Client Scopes
           providerId: allowed-client-templates
           subType: anonymous
@@ -1335,7 +1339,7 @@ spec:
           config:
             allow-default-scopes:
               - "true"
-        - id: 40489ce4-34f4-41ad-8dfd-6bd20eef0b3a
+        - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-regpol-allowed-cliscope-auth') | ansible.builtin.to_uuid }}
           name: Allowed Client Scopes
           providerId: allowed-client-templates
           subType: authenticated
@@ -1344,7 +1348,7 @@ spec:
             allow-default-scopes:
               - "true"
       org.keycloak.keys.KeyProvider:
-        - id: e75ab818-8af9-45e1-955d-858008455ee1
+        - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-keyprov-hs512') | ansible.builtin.to_uuid }}
           name: hmac-generated-hs512
           providerId: hmac-generated
           subComponents: {}
@@ -1353,14 +1357,14 @@ spec:
               - "100"
             algorithm:
               - HS512
-        - id: a8107baf-ac14-4170-9f5f-d88e7e8641ac
+        - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-keyprov-aesgen') | ansible.builtin.to_uuid }}
           name: aes-generated
           providerId: aes-generated
           subComponents: {}
           config:
             priority:
               - "100"
-        - id: 708c706a-6c14-4735-8ce0-184e4d45f20d
+        - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-keyprov-rsaencgen') | ansible.builtin.to_uuid }}
           name: rsa-enc-generated
           providerId: rsa-enc-generated
           subComponents: {}
@@ -1369,7 +1373,7 @@ spec:
               - "100"
             algorithm:
               - RSA-OAEP
-        - id: 0a770315-2818-4f3f-b6cf-2da39c98ea08
+        - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-keyprov-rsagen') | ansible.builtin.to_uuid }}
           name: rsa-generated
           providerId: rsa-generated
           subComponents: {}
@@ -1379,7 +1383,7 @@ spec:
     internationalizationEnabled: false
     supportedLocales: []
     authenticationFlows:
-      - id: fcd55c8d-af04-4f3a-8d95-f2b8822d9419
+      - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-authflow-acct-vrfy-opt') | ansible.builtin.to_uuid }}
         alias: Account verification options
         description: Method with which to verity the existing account
         providerId: basic-flow
@@ -1398,7 +1402,7 @@ spec:
             autheticatorFlow: true
             flowAlias: Verify Existing Account by Re-authentication
             userSetupAllowed: false
-      - id: d9aa6da8-f0e1-4382-ae72-db059f0a0432
+      - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-authflow-brws-cond-otp') | ansible.builtin.to_uuid }}
         alias: Browser - Conditional OTP
         description: Flow to determine if the OTP is required for the authentication
         providerId: basic-flow
@@ -1417,7 +1421,7 @@ spec:
             priority: 20
             autheticatorFlow: false
             userSetupAllowed: false
-      - id: 45e1dbb4-03ea-4215-b0fc-1a3d4055735d
+      - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-authflow-brws-cond-org') | ansible.builtin.to_uuid }}
         alias: Browser - Conditional Organization
         description: Flow to determine if the organization identity-first login is to be used
         providerId: basic-flow
@@ -1436,7 +1440,7 @@ spec:
             priority: 20
             autheticatorFlow: false
             userSetupAllowed: false
-      - id: a242ecf3-51cf-4ebc-bbca-09afa132ddb9
+      - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-authflow-dg-cond-otp') | ansible.builtin.to_uuid }}
         alias: Direct Grant - Conditional OTP
         description: Flow to determine if the OTP is required for the authentication
         providerId: basic-flow
@@ -1455,7 +1459,7 @@ spec:
             priority: 20
             autheticatorFlow: false
             userSetupAllowed: false
-      - id: 9d666bad-2193-49a8-a001-9fd24459368f
+      - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-authflow-fbrok-login-cond-org') | ansible.builtin.to_uuid }}
         alias: First Broker Login - Conditional Organization
         description: Flow to determine if the authenticator that adds organization members is to be used
         providerId: basic-flow
@@ -1474,7 +1478,7 @@ spec:
             priority: 20
             autheticatorFlow: false
             userSetupAllowed: false
-      - id: 75bacb96-eff3-45e4-a730-bb787812c644
+      - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-authflow-fbrok-login-cond-otp') | ansible.builtin.to_uuid }}
         alias: First broker login - Conditional OTP
         description: Flow to determine if the OTP is required for the authentication
         providerId: basic-flow
@@ -1493,7 +1497,7 @@ spec:
             priority: 20
             autheticatorFlow: false
             userSetupAllowed: false
-      - id: 5c1a2783-f6d3-4411-a70b-aff534388222
+      - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-authflow-handle-existing') | ansible.builtin.to_uuid }}
         alias: Handle Existing Account
         description: Handle what to do if there is existing account with same email/username like authenticated identity provider
         providerId: basic-flow
@@ -1512,7 +1516,7 @@ spec:
             autheticatorFlow: true
             flowAlias: Account verification options
             userSetupAllowed: false
-      - id: 981a45fd-33b4-4e8b-b565-f0f0c21fce1a
+      - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-authflow-org') | ansible.builtin.to_uuid }}
         alias: Organization
         providerId: basic-flow
         topLevel: false
@@ -1524,7 +1528,7 @@ spec:
             autheticatorFlow: true
             flowAlias: Browser - Conditional Organization
             userSetupAllowed: false
-      - id: cc33ee5d-58d1-49f4-9084-67a443b9bddc
+      - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-authflow-cond-otp') | ansible.builtin.to_uuid }}
         alias: Reset - Conditional OTP
         description: Flow to determine if the OTP should be reset or not. Set to REQUIRED to force.
         providerId: basic-flow
@@ -1543,7 +1547,7 @@ spec:
             priority: 20
             autheticatorFlow: false
             userSetupAllowed: false
-      - id: f4b9279a-08f0-4b22-a2e1-abfafec02de6
+      - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-authflow-ucreat-or-link') | ansible.builtin.to_uuid }}
         alias: User creation or linking
         description: Flow for the existing/non-existing user alternatives
         providerId: basic-flow
@@ -1563,7 +1567,7 @@ spec:
             autheticatorFlow: true
             flowAlias: Handle Existing Account
             userSetupAllowed: false
-      - id: 91cc2815-09c5-4f82-a1fc-62a2fc32327d
+      - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-authflow-vrfy-existing-reauth') | ansible.builtin.to_uuid }}
         alias: Verify Existing Account by Re-authentication
         description: Reauthentication of existing account
         providerId: basic-flow
@@ -1582,7 +1586,7 @@ spec:
             autheticatorFlow: true
             flowAlias: First broker login - Conditional OTP
             userSetupAllowed: false
-      - id: 0455fc78-3bd3-4fa1-a73a-f1c9a80e7293
+      - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-authflow-brws-based-auth') | ansible.builtin.to_uuid }}
         alias: browser
         description: Browser based authentication
         providerId: basic-flow
@@ -1619,7 +1623,7 @@ spec:
             autheticatorFlow: true
             flowAlias: forms
             userSetupAllowed: false
-      - id: 78bc6381-5d50-4220-a7b5-a0a2e697cd5e
+      - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-authflow-base-client-auth') | ansible.builtin.to_uuid }}
         alias: clients
         description: Base authentication for clients
         providerId: client-flow
@@ -1650,7 +1654,7 @@ spec:
             priority: 40
             autheticatorFlow: false
             userSetupAllowed: false
-      - id: 0fd8e9bd-1616-4810-8a2c-2862ecc62312
+      - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-authflow-dgrant-oidc-owner') | ansible.builtin.to_uuid }}
         alias: direct grant
         description: OpenID Connect Resource Owner Grant
         providerId: basic-flow
@@ -1675,7 +1679,7 @@ spec:
             autheticatorFlow: true
             flowAlias: Direct Grant - Conditional OTP
             userSetupAllowed: false
-      - id: 03035827-7537-4b94-831f-3184d98d6d26
+      - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-authflow-docker-auth') | ansible.builtin.to_uuid }}
         alias: docker auth
         description: Used by Docker clients to authenticate against the IDP
         providerId: basic-flow
@@ -1688,7 +1692,7 @@ spec:
             priority: 10
             autheticatorFlow: false
             userSetupAllowed: false
-      - id: 1a9fdcb1-591e-412b-a8ee-37de4ec78191
+      - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-authflow-fbrok-login') | ansible.builtin.to_uuid }}
         alias: first broker login
         description: Actions taken after first broker login with identity provider account, which is not yet linked to any Keycloak account
         providerId: basic-flow
@@ -1714,7 +1718,7 @@ spec:
             autheticatorFlow: true
             flowAlias: First Broker Login - Conditional Organization
             userSetupAllowed: false
-      - id: 63b86089-a556-42cb-8e25-71913e1bd9cd
+      - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-authflow-forms') | ansible.builtin.to_uuid }}
         alias: forms
         description: Username, password, otp and other auth forms.
         providerId: basic-flow
@@ -1733,7 +1737,7 @@ spec:
             autheticatorFlow: true
             flowAlias: Browser - Conditional OTP
             userSetupAllowed: false
-      - id: 0b1d0824-a9f2-4819-8049-28dc559c66a0
+      - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-authflow-reg-flow') | ansible.builtin.to_uuid }}
         alias: registration
         description: Registration flow
         providerId: basic-flow
@@ -1747,7 +1751,7 @@ spec:
             autheticatorFlow: true
             flowAlias: registration form
             userSetupAllowed: false
-      - id: a5fa008b-f069-404e-8767-a2ed5687262f
+      - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-authflow-reg-form') | ansible.builtin.to_uuid }}
         alias: registration form
         description: Registration form
         providerId: form-flow
@@ -1778,7 +1782,7 @@ spec:
             priority: 70
             autheticatorFlow: false
             userSetupAllowed: false
-      - id: fef3d2a2-bbc2-4c5f-834f-f4014f6a699c
+      - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-authflow-reset-creds') | ansible.builtin.to_uuid }}
         alias: reset credentials
         description: Reset credentials for a user if they forgot their password or something
         providerId: basic-flow
@@ -1809,7 +1813,7 @@ spec:
             autheticatorFlow: true
             flowAlias: Reset - Conditional OTP
             userSetupAllowed: false
-      - id: 52cd82c9-fd89-44f3-9c2c-34b103872607
+      - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-authflow-saml-ecp') | ansible.builtin.to_uuid }}
         alias: saml ecp
         description: SAML ECP Profile Authentication Flow
         providerId: basic-flow
@@ -1823,11 +1827,11 @@ spec:
             autheticatorFlow: false
             userSetupAllowed: false
     authenticatorConfig:
-      - id: 99ecab09-1a65-49e2-9e9a-61962bd969ee
+      - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-authconfig-unique-user') | ansible.builtin.to_uuid }}
         alias: create unique user config
         config:
           require.password.update.after.registration: "false"
-      - id: 25245a79-e0b9-4038-9723-3a918dea2a9d
+      - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-authconfig-review-profile-') | ansible.builtin.to_uuid }}
         alias: review profile config
         config:
           update.profile.on.first.login: missing

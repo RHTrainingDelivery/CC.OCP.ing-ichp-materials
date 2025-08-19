@@ -1,0 +1,134 @@
+---
+# remove any realm imports
+- name: If there are no realm imports, create one.
+  block:
+    - name: Remove the template realm import.
+      kubernetes.core.k8s:
+        kubeconfig: tmp/kubeconfig-ocp4
+        validate_certs: no
+        api_version: k8s.keycloak.org/v2alpha1
+        kind: keycloakrealmimport
+        namespace: "{{ rhbk.namespace | default('keycloak') }}"
+        name: "{{ rhbk.name | default('sso') }}-{{ rhbk.realm | default('sample-realm') }}-import"
+        state: absent
+
+# remove the route
+- name: Remove the re-encrypt route.
+  kubernetes.core.k8s:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: route.openshift.io/v1
+    kind: route
+    namespace: "{{ rhbk.namespace | default('keycloak') }}"
+    name: "{{ rhbk.name | default('sso') }}"
+    state: absent
+
+- name: Check if the Keycloak service is there.
+  kubernetes.core.k8s_info:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: v1
+    kind: service
+    namespace: "{{ rhbk.namespace | default('keycloak') }}"
+    name: "{{ rhbk.name | default('sso') }}-service"
+  register: service_is_there
+
+# remove the annotation from the service
+- name: Remove the TLS annotation from the service.
+  kubernetes.core.k8s_json_patch:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: v1
+    kind: service
+    namespace: "{{ rhbk.namespace | default('keycloak') }}"
+    name: "{{ rhbk.name | default('sso') }}-service"
+    patch:
+      - op: remove
+        path: /metadata/annotations/service.beta.openshift.io~1serving-cert-secret-name
+  when:
+    - service_is_there.resources is defined
+    - service_is_there.resources | length == 1
+    - service_is_there.resources[0].metadata is defined
+    - service_is_there.resources[0].metadata.annotations is defined
+    - service_is_there.resources[0].metadata.annotations.keys() is contains("service.beta.openshift.io/serving-cert-secret-name")
+
+# remove the tls secret
+- name: Remove the TLS secret.
+  kubernetes.core.k8s:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: v1
+    kind: secret
+    namespace: "{{ rhbk.namespace | default('keycloak') }}"
+    name: "{{ rhbk.name | default('sso') }}-tls"
+    state: absent
+
+# remove the keycloak
+- name: Remove the Keycloak.
+  kubernetes.core.k8s:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: k8s.keycloak.org/v2alpha1
+    kind: keycloak
+    namespace: "{{ rhbk.namespace | default('keycloak') }}"
+    name: "{{ rhbk.name | default('sso') }}"
+    state: absent
+
+# TODO: Wait for anything here?
+
+# remove bootstrap secret
+- name: Remove the bootstrap credentials secret.
+  kubernetes.core.k8s:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: v1
+    kind: secret
+    namespace: "{{ rhbk.namespace | default('keycloak') }}"
+    name: "{{ rhbk.name | default('sso') }}-auth"
+    state: absent
+
+# remove db service
+- name: Remove the database service.
+  kubernetes.core.k8s:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: v1
+    kind: service
+    namespace: "{{ rhbk.namespace | default('keycloak') }}"
+    name: "{{ rhbk.name | default('sso') }}-db"
+    state: absent
+
+# remove db sts
+- name: Remove the database statefulset.
+  kubernetes.core.k8s:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: apps/v1
+    kind: statefulset
+    namespace: "{{ rhbk.namespace | default('keycloak') }}"
+    name: "{{ rhbk.name | default('sso') }}-db"
+    state: absent
+
+# remove db credential secret
+- name: Remove the database credentials secret.
+  kubernetes.core.k8s:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: v1
+    kind: secret
+    namespace: "{{ rhbk.namespace | default('keycloak') }}"
+    name: "{{ rhbk.name | default('sso') }}-db-auth"
+    state: absent
+
+# remove pvcs
+- name: Finally, remove the PVC(s).
+  kubernetes.core.k8s:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: v1
+    kind: persistentvolumeclaim
+    namespace: "{{ rhbk.namespace | default('keycloak') }}"
+    # TODO: if rhbk.db.replicas is implemented this will need to become a loop
+    name: "{{ rhbk.name | default('sso') }}-db-data-{{ rhbk.name | default('sso') }}-db-0"
+    state: absent
+...

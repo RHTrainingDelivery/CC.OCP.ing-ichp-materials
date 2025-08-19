@@ -1,0 +1,348 @@
+---
+# Deploys RHBK in a namespace with the Keycloak operator CSV.
+- name: Check if there is a namespace.
+  kubernetes.core.k8s_info:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: v1
+    kind: namespace
+    name: "{{ rhbk.namespace | default('keycloak') }}"
+  register: prereq_ns
+
+- name: Fail if not so.
+  ansible.builtin.assert:
+    that:
+      - prereq_ns.resources is defined
+      - prereq_ns.resources | length == 1
+    success_msg: "OK, namespace found."
+    fail_msg: "FATAL: namespace to deploy ({{ rhbk.namespace | default('keycloak') }}) not found. Ensure there is an operator already present."
+
+# TODO: figure this out. probably look at subscription's CSV status attribute for name or something.
+- name: Check if there is a CSV in the namespace.
+  kubernetes.core.k8s_info:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: operators.coreos.com/v1alpha1
+    kind: clusterserviceversion
+    namespace: "{{ rhbk.namespace | default('keycloak') }}"
+  register: prereq_csv
+
+# TODO: figure this out - what is the CSV name, how do you find the operator manifest?
+- name: Fail if not so.
+  ansible.builtin.assert:
+    that:
+      - prereq_csv.resources is defined
+      - prereq_csv.resources | length > 0
+    success_msg: "OK, operator CSV found."
+    fail_msg: "FATAL: Operator is not deployed in the namespace: {{ rhbk.namespace | default('keycloak') }}. Ensure there is an operator already present."
+
+- name: Tech hack. Prevent anything from blowing up because rhbk is defined somewhere, but not its structured contents.
+  ansible.builtin.set_fact:
+    rhbk: "{{ rhbk | default({}) | combine({ 'db': {} }) }}"
+  when:
+    - rhbk.db is not defined
+
+- name: Ensure there is a secret containing DB credentials in the project.
+  kubernetes.core.k8s:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: v1
+    kind: secret
+    namespace: "{{ rhbk.namespace | default('keycloak') }}"
+    name: "{{ rhbk.name | default('sso') }}-db-auth"
+    resource_definition:
+      data:
+        username: "{{ rhbk.db.username | default('rhbk') | b64encode }}"
+        password: "{{ rhbk.db.password | default('secret') | b64encode }}"
+
+# TODO: ensure that there is no STS to begin with, or if there is, verify that
+#       only the allowed fields would change, if anything. Otherwise:
+#
+#         Forbidden: updates to statefulset spec for fields other than
+#         'replicas', 'ordinals', 'template', 'updateStrategy',
+#         'persistentVolumeClaimRetentionPolicy' and 'minReadySeconds' are
+#         forbidden
+#
+- name: Ensure there is a database sts in the project
+  kubernetes.core.k8s:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: apps/v1
+    kind: statefulset
+    namespace: "{{ rhbk.namespace | default('keycloak') }}"
+    name: "{{ rhbk.name | default('sso') }}-db"
+    resource_definition:
+      spec:
+        # TODO: implement rhbk.db.replicas at some point?
+        replicas: 1
+        serviceName: "{{ rhbk.name | default('sso') }}-db"
+        selector:
+          matchLabels:
+            app: "{{ rhbk.name | default('sso') }}-db"
+        template:
+          metadata:
+            labels:
+              app: "{{ rhbk.name | default('sso') }}-db"
+          spec:
+            containers:
+              - name: "{{ rhbk.name | default('sso') }}-db"
+                image: "{{ rhbk.db.image | default('registry.redhat.io/rhel9/postgresql-15:latest') }}"
+                volumeMounts:
+                  - mountPath: /var/lib/pgsql/data
+                    name: "{{ rhbk.name | default('sso') }}-db-data"
+                env:
+                  - name: POSTGRESQL_USER
+                    valueFrom:
+                      secretKeyRef:
+                        name: "{{ rhbk.name | default('sso') }}-db-auth"
+                        key: username
+                  - name: POSTGRESQL_PASSWORD
+                    valueFrom:
+                      secretKeyRef:
+                        name: "{{ rhbk.name | default('sso') }}-db-auth"
+                        key: password
+                  - name: POSTGRESQL_DATABASE
+                    value: "{{ rhbk.db.name | default('rhbk') }}"
+        volumeClaimTemplates:
+          - metadata:
+              name: "{{ rhbk.name | default('sso') }}-db-data"
+            spec:
+              accessModes: "{{ rhbk.db.claim_modes | default(['ReadWriteOnce']) }}"
+              storageClassName: "{{ rhbk.db.storage_class | default(omit) }}"
+              resources:
+                requests:
+                  storage: "{{ rhbk.db.size | default('1Gi') }}"
+
+- name: Ensure there is a service for the database as well
+  kubernetes.core.k8s:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: v1
+    kind: service
+    namespace: "{{ rhbk.namespace | default('keycloak') }}"
+    name: "{{ rhbk.name | default('sso') }}-db"
+    resource_definition:
+      spec:
+        selector:
+          app: "{{ rhbk.name | default('sso') }}-db"
+        type: LoadBalancer
+        ports:
+          - port: 5432
+            targetPort: 5432
+            protocol: TCP
+
+- name: Ensure there is a secret containing Keycloak bootstrap credentials
+  kubernetes.core.k8s:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: v1
+    kind: secret
+    namespace: "{{ rhbk.namespace | default('keycloak') }}"
+    name: "{{ rhbk.name | default('sso') }}-auth"
+    resource_definition:
+      data:
+        username: "{{ rhbk.admin.username | default('rhbk') | b64encode }}"
+        password: "{{ rhbk.admin.password | default('secret') | b64encode }}"
+
+- name: If there is no FQDN, check what the default domain is.
+  kubernetes.core.k8s_info:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: operator.openshift.io/v1
+    kind: ingresscontroller
+    namespace: openshift-ingress-operator
+    name: default
+  register: default_ingress
+  when: rhbk.fqdn is not defined
+
+- name: Set a fact that reflects either the FQDN as set, or a composition of vars and default ingress info.
+  ansible.builtin.set_fact:
+    rhbk_fqdn: "{{ rhbk.fqdn | default((rhbk.name | default('sso')) + '-' + (rhbk.namespace | default('keycloak')) + '.' + default_ingress.resources[0].status.domain) }}"
+
+- name: Announce what hostname would be used.
+  ansible.builtin.debug:
+    msg: Using "https://{{ rhbk_fqdn }}" as the hostname.
+
+# TODO: remember if there were changes, and force delete any non-ready pod?
+- name: Lastly, make sure there is a Keycloak
+  kubernetes.core.k8s:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: k8s.keycloak.org/v2alpha1
+    kind: keycloak
+    namespace: "{{ rhbk.namespace | default('keycloak') }}"
+    name: "{{ rhbk.name | default('sso') }}"
+    resource_definition:
+      spec:
+        instances: "{{ rhbk.replicas | default(1) }}"
+        db:
+          vendor: postgres
+          host: "{{ rhbk.name | default('sso') }}-db"
+          database: "{{ rhbk.db.name | default('rhbk') }}"
+          usernameSecret:
+            name: "{{ rhbk.name | default('sso') }}-db-auth"
+            key: username
+          passwordSecret:
+            name: "{{ rhbk.name | default('sso') }}-db-auth"
+            key: password
+        hostname:
+          hostname: "https://{{ rhbk_fqdn }}"
+          strict: false
+          backchannelDynamic: true
+        http:
+          httpEnabled: true
+          httpPort: 8080
+          httpsPort: 8443
+          tlsSecret: "{{ rhbk.name | default('sso') }}-tls"
+        bootstrapAdmin:
+          user:
+            secret: "{{ rhbk.name | default('sso') }}-auth"
+        ingress:
+          enabled: false
+
+- name: Wait for the service to show up.
+  kubernetes.core.k8s_info:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: v1
+    kind: service
+    namespace: "{{ rhbk.namespace | default('keycloak') }}"
+    name: "{{ rhbk.name | default('sso') }}-service"
+  register: rhbk_svc
+  until:
+    - rhbk_svc.resources is defined
+    - (rhbk_svc.resources | length) > 0
+  retries: 24
+  delay: 5
+
+- name: Ensure the service is correctly annotated.
+  kubernetes.core.k8s:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: v1
+    kind: service
+    namespace: "{{ rhbk.namespace | default('keycloak') }}"
+    name: "{{ rhbk.name | default('sso') }}-service"
+    state: patched
+    resource_definition:
+      metadata:
+        annotations:
+          service.beta.openshift.io/serving-cert-secret-name: "{{ rhbk.name | default('sso') }}-tls"
+
+- name: Make sure there is a re-encrypt route.
+  kubernetes.core.k8s:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: route.openshift.io/v1
+    kind: route
+    namespace: "{{ rhbk.namespace | default('keycloak') }}"
+    name: "{{ rhbk.name | default('sso') }}"
+    resource_definition:
+      spec:
+        to:
+          kind: Service
+          name: "{{ rhbk.name | default('sso') }}-service"
+        port:
+          targetPort: 8443
+        tls:
+          termination: reencrypt
+          insecureEdgeTerminationPolicy: Redirect
+
+- name: Wait for the Keycloak service to report ready.
+  kubernetes.core.k8s_info:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: k8s.keycloak.org/v2alpha1
+    kind: keycloak
+    namespace: "{{ rhbk.namespace | default('keycloak') }}"
+    name: "{{ rhbk.name | default('sso') }}"
+  register: rhbk_ready
+  until:
+    - rhbk_ready.resources is defined
+    - rhbk_ready.resources | length == 1
+    - rhbk_ready.resources[0].status is defined
+    - (rhbk_ready.resources[0].status | community.general.json_query('conditions[?type==`Ready`].status'))[0]
+  retries: 24
+  delay: 5
+
+- name: Get an auth token from Keycloak
+  ansible.builtin.uri:
+    method: POST
+    return_content: yes
+    validate_certs: no
+    url: "https://{{ rhbk_fqdn }}/realms/master/protocol/openid-connect/token"
+    headers:
+      Accept: application/json
+    body: "client_id=admin-cli&username={{ rhbk.admin.username | default('rhbk') }}&password={{ rhbk.admin.password | default('secret') }}&grant_type=password"
+  register: sso_token_rsp
+
+- name: Verify that the token is usable.
+  ansible.builtin.assert:
+    that: sso_token_rsp.json is defined and sso_token_rsp.json.access_token is defined
+    fail_msg: "ERROR: Failed to obtain authentication token from Keycloak."
+    success_msg: "OK: got authentication token."
+
+- name: Store the token as a fact
+  ansible.builtin.set_fact:
+    admin_token: "{{ sso_token_rsp.json.access_token }}"
+
+- name: Get a list of existing realms.
+  ansible.builtin.uri:
+    method: GET
+    return_content: true
+    validate_certs: false
+    url: "https://{{ rhbk_fqdn }}/admin/realms"
+    headers:
+      Authorization: Bearer {{ admin_token }}
+      Accept: application/json
+  register: rhbk_realms
+
+- name: Store the list of realm names/ids as a fact
+  ansible.builtin.set_fact:
+    realms: "{{ rhbk_realms.json | items2dict(key_name='realm', value_name='id') }}"
+
+- name: Import the realm if not present yet
+  block:
+
+    - name: Check whether there is already a realm import CR
+      kubernetes.core.k8s_info:
+        kubeconfig: tmp/kubeconfig-ocp4
+        validate_certs: no
+        api_version: k8s.keycloak.org/v2alpha1
+        kind: keycloakrealmimport
+        namespace: "{{ rhbk.namespace | default('keycloak') }}"
+      register: realm_imports
+
+    - name: Remove a previous realm import if it happens to be there.
+      kubernetes.core.k8s:
+        kubeconfig: tmp/kubeconfig-ocp4
+        validate_certs: no
+        api_version: k8s.keycloak.org/v2alpha1
+        kind: keycloakrealmimport
+        namespace: "{{ rhbk.namespace | default('keycloak') }}"
+        name: "{{ rhbk.name | default('sso') }}-{{ rhbk.realm | default('sample-realm') }}-import"
+        state: absent
+      when:
+        - realm_imports.resources is defined
+        - (realm_imports.resources | length) > 0
+        - (realm_imports | community.general.json_query('resources[*].metadata.name')) is contains((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-import')
+
+    - ansible.builtin.template:
+        src: templates/realm-import-template.yaml.j2
+        dest: realm-import-template.yaml
+
+    # TODO: finish templating this one, introduce more settings as needed
+    - name: Apply a template realm import.
+      kubernetes.core.k8s:
+        kubeconfig: tmp/kubeconfig-ocp4
+        validate_certs: no
+        api_version: k8s.keycloak.org/v2alpha1
+        kind: keycloakrealmimport
+        namespace: "{{ rhbk.namespace | default('keycloak') }}"
+        name: "{{ rhbk.name | default('sso') }}-{{ rhbk.realm | default('sample-realm') }}-import"
+        template: templates/realm-import-template.yaml.j2
+
+  when:
+    - realms[rhbk.realm | default('sample-realm')] is not defined
+
+...

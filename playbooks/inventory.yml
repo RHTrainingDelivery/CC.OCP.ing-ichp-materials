@@ -17,6 +17,11 @@ all:
     rhbk:
       namespace: keycloak
       realm: ichp
+      clients:
+        - id: openshift
+          name: OpenShift OIDC Client
+          secret: verysecret
+          base_url: https://oauth-openshift.apps.ocp4.example.com
       users:
         - username: johndoe
           password: redhat
