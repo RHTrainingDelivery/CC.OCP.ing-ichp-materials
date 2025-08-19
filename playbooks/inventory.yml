@@ -25,10 +25,20 @@ all:
       users:
         - username: johndoe
           password: redhat
-          fullname: John Doe
+          firstname: John
+          lastname: Doe
         - username: janedoe
           password: redhat
-          fullname: Jane Doe
+          firstname: Jane
+          lastname: Doe
+        - username: tomjones
+          password: redhat
+          firstname: Tom
+          lastname: Jones
+        - username: jsmith
+          password: redhat
+          firstname: James
+          lastname: Smith
 
     # Operators that need to be (re)installed.
     #
