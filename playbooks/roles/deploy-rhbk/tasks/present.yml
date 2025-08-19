@@ -320,6 +320,40 @@
         namespace: "{{ rhbk.namespace | default('keycloak') }}"
         name: "{{ rhbk.name | default('sso') }}-{{ rhbk.realm | default('sample-realm') }}-import"
         template: templates/realm-import-template.yaml.j2
+      register: created_import
+
+    - name: Wait for the import to rollout.
+      kubernetes.core.k8s_info:
+        kubeconfig: tmp/kubeconfig-ocp4
+        validate_certs: no
+        api_version: v1
+        kind: pod
+        namespace: "{{ rhbk.namespace | default('keycloak') }}"
+        label_selectors:
+          - app=keycloak-realm-import
+      register: import_running
+      until:
+        - import_running.resources is defined
+        - import_running.resources | length > 0
+        - import_running.resources[0].status.phase != "Pending"
+        - import_running.resources[0].status.phase != "Running"
+      when: created_import.changed
+
+    - name: Wait for the Keycloak pod to restart.
+      kubernetes.core.k8s_info:
+        kubeconfig: tmp/kubeconfig-ocp4
+        validate_certs: no
+        api_version: v1
+        kind: pod
+        namespace: "{{ rhbk.namespace | default('keycloak') }}"
+        label_selectors:
+          - app=keycloak
+      register: rhbk_running
+      until:
+        - rhbk_running.resources is defined
+        - rhbk_running.resources | length > 0
+        - rhbk_running.resources[0].status.phase == "Running"
+      when: created_import.changed
 
   when:
     - realms[rhbk.realm | default('sample-realm')] is not defined
