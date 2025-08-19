@@ -175,7 +175,7 @@
       until:
         - co_auth.resources is defined
         - co_auth.resources | length == 1
-        - (co_auth.resources[0].status | community.general.json_query('conditions[?type==`Progressing`].status]))[0]
+        - (co_auth.resources[0].status | community.general.json_query('conditions[?type==`Progressing`].status))[0]
       retries: 24
       delay: 5
 
@@ -190,7 +190,7 @@
       until:
         - co_auth.resources is defined
         - co_auth.resources | length == 1
-        - not (co_auth.resources[0].status | community.general.json_query('conditions[?type==`Progressing`].status]))[0]
+        - not (co_auth.resources[0].status | community.general.json_query('conditions[?type==`Progressing`].status))[0]
       retries: 24
       delay: 5
 
