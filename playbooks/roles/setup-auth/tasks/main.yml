@@ -175,8 +175,8 @@
       until:
         - co_auth.resources is defined
         - co_auth.resources | length == 1
-        - (co_auth.resources[0].status | community.general.json_query('conditions[?type==`Progressing`].status'))[0]
-      retries: 24
+        - ((co_auth.resources[0].status | community.general.json_query('conditions[?type==`Progressing`].status'))[0] | bool)
+      retries: 60
       delay: 5
 
     - name: Wait for co/authentication to finish progressing.
@@ -190,8 +190,8 @@
       until:
         - co_auth.resources is defined
         - co_auth.resources | length == 1
-        - not (co_auth.resources[0].status | community.general.json_query('conditions[?type==`Progressing`].status'))[0]
-      retries: 24
+        - not ((co_auth.resources[0].status | community.general.json_query('conditions[?type==`Progressing`].status'))[0] | bool)
+      retries: 60
       delay: 5
 
   when: patched_oauth.changed
