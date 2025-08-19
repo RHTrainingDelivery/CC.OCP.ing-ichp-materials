@@ -5,22 +5,23 @@
 # Required variables (some are reused from deploy-rhbk role):
 #
 # openshift:
-#   rhbk_client_id: the name of a client above to use for authentication
-#   (default "openshift")
+#   rhbk_client_id:   the name of a client above to use for authentication (default "openshift")
+#   create_groups:    whether to create the groups from realm in OpenShift as well (default yes)
 #
 # rhbk:
-#   namespace:      namespace to deploy to (keycloak)
-#   name:           name of the instance (sso)
-#   fqdn:           fqdn of the route (hostname), detected if omitted
-#   admin:          bootstrap admin credentials
-#     username:       username (rhbk)
-#     password:       password (secret)
-#   realm:          name of the realm (sample-realm)
-#   clients:[]      a list of clients to create in the realm
-#     - id:           clientId
-#       name:         client (human readable) name (client.id)
-#       secret:       the client secret, if used
-#       base_url:     the base URL for redirects and other bits
+#   namespace:        namespace to deploy to (keycloak)
+#   name:             name of the instance (sso)
+#   fqdn:             fqdn of the route (hostname), detected if omitted
+#   admin:            bootstrap admin credentials
+#     username:         username (rhbk)
+#     password:         password (secret)
+#   realm:            name of the realm (sample-realm)
+#   clients:[]        a list of clients to create in the realm
+#     - id:             clientId
+#       name:           client (human readable) name (client.id)
+#       secret:         the client secret, if used
+#       base_url:       the base URL for redirects and other bits
+#   groups:[]         groups to create, this time create them in OpenShift TODO
 #
 # TODO: prerequisite check:
 #   - either a fqdn or an existing keycloak resource coordinates
@@ -159,8 +160,39 @@
               groups:
               - groups
             issuer: "https://{{ rhbk_fqdn }}/realms/{{ rhbk.realm | default('sample-realm') }}"
+  register: patched_oauth
 
-## TODO: Wait for clusteroperator/authentication to stop progressing.
-#
-## TODO: Check that all keycloakuser (or all users?) have offline_access realm role?
+- name: Wait for OAuth to rollout if the resource was patched.
+  block:
+    - name: Wait for co/authentication to start progressing.
+      kubernetes.core.k8s_info:
+        kubeconfig: tmp/kubeconfig-ocp4
+        validate_certs: no
+        api_version: config.openshift.io/v1
+        kind: clusteroperator
+        name: authentication
+      register: co_auth
+      until:
+        - co_auth.resources is defined
+        - co_auth.resources | length == 1
+        - (co_auth.resources[0].status | community.general.json_query('conditions[?type==Progressing].status]))[0]
+      retries: 24
+      wait: 5
+
+    - name: Wait for co/authentication to finish progressing.
+      kubernetes.core.k8s_info:
+        kubeconfig: tmp/kubeconfig-ocp4
+        validate_certs: no
+        api_version: config.openshift.io/v1
+        kind: clusteroperator
+        name: authentication
+      register: co_auth
+      until:
+        - co_auth.resources is defined
+        - co_auth.resources | length == 1
+        - not (co_auth.resources[0].status | community.general.json_query('conditions[?type==Progressing].status]))[0]
+      retries: 24
+      wait: 5
+
+  when: patched_oauth.changed
 ...
