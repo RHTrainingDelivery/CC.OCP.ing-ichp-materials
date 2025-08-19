@@ -22,23 +22,36 @@ all:
           name: OpenShift OIDC Client
           secret: verysecret
           base_url: https://oauth-openshift.apps.ocp4.example.com
+      groups:
+        - admins
+        - developers
+        - viewers
+        - debuggers
       users:
         - username: johndoe
           password: redhat
           firstname: John
           lastname: Doe
+          groups:
+            - admins
         - username: janedoe
           password: redhat
           firstname: Jane
           lastname: Doe
+          groups:
+            - developers
         - username: tomjones
           password: redhat
           firstname: Tom
           lastname: Jones
+          groups:
+            - viewers
         - username: jsmith
           password: redhat
           firstname: James
           lastname: Smith
+          groups:
+            - debuggers
 
     # Operators that need to be (re)installed.
     #
