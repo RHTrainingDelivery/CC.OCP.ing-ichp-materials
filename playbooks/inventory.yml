@@ -14,6 +14,10 @@ all:
     ocp_maj: "4.16"
     ocp_z: "4.16.2"
 
+    openshift:
+      rhbk_client_id: openshift
+      create_groups: yes
+
     rhbk:
       namespace: keycloak
       realm: ichp
@@ -22,6 +26,7 @@ all:
           name: OpenShift OIDC Client
           secret: verysecret
           base_url: https://oauth-openshift.apps.ocp4.example.com
+          direct_grants: false
       groups:
         - admins
         - developers
