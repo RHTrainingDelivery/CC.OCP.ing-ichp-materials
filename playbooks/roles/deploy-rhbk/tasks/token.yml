@@ -1,0 +1,30 @@
+---
+# Required variables:
+#   rhbk_fqdn             the FQDN of the Keycloak server
+#   rhbk.admin.username   admin user
+#   rhbk.admin.password   admin password
+#
+# Registers (or refreshes) a fact called admin_token which you can use for auth.
+#
+- name: Get an auth token from Keycloak
+  ansible.builtin.uri:
+    method: POST
+    return_content: yes
+    validate_certs: no
+    url: "https://{{ rhbk_fqdn }}/realms/master/protocol/openid-connect/token"
+    headers:
+      Accept: application/json
+    body: "client_id=admin-cli&username={{ rhbk.admin.username | default('rhbk') }}&password={{ rhbk.admin.password | default('secret') }}&grant_type=password"
+  register: sso_token_rsp
+
+- name: Verify that the token is usable.
+  ansible.builtin.assert:
+    that: sso_token_rsp.json is defined and sso_token_rsp.json.access_token is defined
+    fail_msg: "ERROR: Failed to obtain authentication token from Keycloak."
+    success_msg: "OK: got authentication token."
+
+- name: Store the token as a fact
+  ansible.builtin.set_fact:
+    admin_token: "{{ sso_token_rsp.json.access_token }}"
+
+...
