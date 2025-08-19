@@ -563,7 +563,9 @@ spec:
         enabled: true
         alwaysDisplayInConsole: false
         clientAuthenticatorType: client-secret
-        secret: '{{ client.secret | default(omit) }}'
+{% if client.secret is defined %}
+        secret: '{{ client.secret }}'
+{% endif %}
         redirectUris:
           - {{ client.base_url }}/*
         webOrigins:
@@ -573,7 +575,7 @@ spec:
         consentRequired: false
         standardFlowEnabled: true
         implicitFlowEnabled: false
-        directAccessGrantsEnabled: true
+        directAccessGrantsEnabled: {{ client.direct_grants | default(true) | bool }}
         serviceAccountsEnabled: false
         publicClient: false
         frontchannelLogout: true
@@ -605,6 +607,23 @@ spec:
         authenticationFlowBindingOverrides: {}
         fullScopeAllowed: true
         nodeReRegistrationTimeout: -1
+{% if client.map_groups | default(true) %}
+        protocolMappers:
+          - id: {{ ((rhbk.name | default('sso')) + '-' + (rhbk.realm | default('sample-realm')) + '-client-openshift-pm-groups') | ansible.builtin.to_uuid }}
+            name: groups
+            protocol: openid-connect
+            protocolMapper: oidc-group-membership-mapper
+            consentRequired: false
+            config:
+              claim.name: groups
+              full.path: false
+              id.token.claim: true
+              access.token.claim: true
+              userinfo.token.claim: true
+              introspection.token.claim: true
+              lightweight.claim: false
+              multivalued: true
+{% endif %}
         defaultClientScopes:
           - web-origins
           - acr
