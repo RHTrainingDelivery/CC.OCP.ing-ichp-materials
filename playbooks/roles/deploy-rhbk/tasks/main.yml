@@ -6,37 +6,39 @@
 # Required variables:
 #
 # rhbk:
-#   namespace:      namespace to deploy to (keycloak)
-#   name:           name of the instance (sso)
-#   replicas:       how many instances
-#   fqdn:           fqdn of the route (hostname), detected if omitted
-#   admin:          bootstrap admin credentials
-#     username:       username (rhbk)
-#     password:       password (secret)
-#   db:             database-specific settings
-#     image:          db server image
-#     name:           database name (rhbk)
-#     username:       database owner (rhbk)
-#     password:       db owner's password (secret)
-#     claim_modes:[]  volume claim template access modes, list (ReadWriteOnce)
-#     storage_class:  storage class name, no default (omitted)
-#     size:           pvc size (1Gi)
-#     replicas:       how many instances (TODO ignored for now)
-#   realm:          name of the realm (sample-realm)
-#   clients:[]      a list of clients to create in the realm
-#     - id:           clientId
-#       name:         client (human readable) name (client.id)
-#       secret:       the client secret, if used
-#       base_url:     the base URL for redirects and other bits
-#   groups:[]       groups to create in the realm, no default (meaning no groups)
-#   users:          users to create in realm, no default (meaning no users)
-#     - username:     required (as it is key)
-#       password:     optional, defaults to "secret"
-#       email:        optional, set to username@example.com if empty
-#       firstname:    optional
-#       lastname:     optional
-#       groups:[]     groups the user should be a member of
-#   state:          present (default) or absent (removes a RHBK instance if found)
+#   namespace:        namespace to deploy to (keycloak)
+#   name:             name of the instance (sso)
+#   replicas:         how many instances
+#   fqdn:             fqdn of the route (hostname), detected if omitted
+#   admin:            bootstrap admin credentials
+#     username:         username (rhbk)
+#     password:         password (secret)
+#   db:               database-specific settings
+#     image:            db server image
+#     name:             database name (rhbk)
+#     username:         database owner (rhbk)
+#     password:         db owner's password (secret)
+#     claim_modes:[]    volume claim template access modes, list (ReadWriteOnce)
+#     storage_class:    storage class name, no default (omitted)
+#     size:             pvc size (1Gi)
+#     replicas:         how many instances (TODO ignored for now)
+#   realm:            name of the realm (sample-realm)
+#   clients:[]        a list of clients to create in the realm
+#     - id:             clientId
+#       name:           client (human readable) name (client.id)
+#       secret:         the client secret, if used
+#       base_url:       the base URL for redirects and other bits
+#       direct_grants:  whether to allow direct grants (yes if you allow CLI login, no otherwise, default true)
+#       map_groups:     whether to map groups into a groups claim (default true)
+#   groups:[]         groups to create in the realm, no default (meaning no groups)
+#   users:            users to create in realm, no default (meaning no users)
+#     - username:       required (as it is key)
+#       password:       optional, defaults to "secret"
+#       email:          optional, set to username@example.com if empty
+#       firstname:      optional
+#       lastname:       optional
+#       groups:[]       groups the user should be a member of
+#   state:            present (default) or absent (removes a RHBK instance if found)
 #
 # NOTE: Use rhbk_state to override rhbk.state from command line.
 #
