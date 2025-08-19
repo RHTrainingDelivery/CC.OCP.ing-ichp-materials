@@ -3,7 +3,7 @@
 #
 # Configures it with a realm, and some users.
 #
-# Required variables (some are supplied by defaults/main.yml):
+# Required variables:
 #
 # rhbk:
 #   namespace:      namespace to deploy to (keycloak)
