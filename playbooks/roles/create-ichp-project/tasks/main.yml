@@ -1,0 +1,58 @@
+---
+# Ensures a project exists and is configured in accordance with ICHP rules:
+#
+#   - has correct RBAC (user role binding)
+#   - has network policies
+#   - has quota and limitranges
+#   - has an EgressIP allocated
+#
+# Requires the following structure:
+#
+#   role:
+#     state:          present or absent
+#     requester:      the user requesting the project
+#     name:           the name of the project
+#     displayname:    optional displayname (defaults to name)
+#     rbac_level:     cluster role to assign to requester
+#     egress_ip:      an available egress IP to allocate to the project
+#     quota:          compute resourcequotas
+#       requests:       compute reservation
+#         cpu:            max cpu reserved (1500m, 1.5 CPU)
+#         memory:         max memory reserved (2048Mi, 2Gi)
+#       limits:         compute limits
+#         cpu:            max cpu consumed (4000m, 4 CPUs)
+#         memory:         max memory consumed (4096Mi, 4Gi)
+#     lrange:         compute limitranges, for both container and pod
+#       default:        default limits and requests
+#         limit:
+#           cpu:          role.lrange.min.cpu * role.lrange.ratio.cpu
+#           memory:       role.lrange.min.memory * role.lrange.ratio.memory
+#         request:
+#           cpu:          defaults to whatever role.lrange.min.cpu is
+#           memory:       defaults to whatever role.lrange.min.memory is
+#       max:            maximum limits
+#         cpu:            maximum cpu limit (4000m, 4 cpus)
+#         memory:         maximum memory limit (4096Mi, 4Gi)
+#       min:            minimum requests
+#         cpu:            minimum requested cpu (50m, 5%)
+#         memory:         minimum requested memory (64Mi)
+#       ratio:          max limit-to-request ratio (x-to-1)
+#         cpu:            cpu lrr (4)
+#         memory:         memory lrr (4)
+#
+# IMPORTANT: XXX: ALL COMPUTE UNITS MUST BE IN milicores AND Mi!
+#
+# TODO: verify stuff before applying template
+#
+- name: Show the values at verbosity 1+
+  ansible.builtin.debug:
+    var: role
+    verbosity: 1
+
+- name: Apply the project template to the cluster.
+  kubernetes.core.k8s:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    template: templates/project-template.yml
+    state: "{{ role.state | default('present') }}"
+...

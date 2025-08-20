@@ -1,0 +1,143 @@
+---
+apiVersion: v1
+kind: List
+metadata: {}
+items:
+- apiVersion: project.openshift.io/v1
+  kind: Project
+  metadata:
+{% if (role.state | default("present")) == "present" %}
+    annotations:
+      openshift.io/description: "ICHP Namespace Requested For {{ role.requester }}"
+      openshift.io/display-name: "{{ role.displayname | default(role.name) }}"
+      openshift.io/requester: {{ role.requester }}
+{% endif %}
+    name: {{ role.name }}
+  spec: {}
+{% if (role.state | default("present")) == "present" %}
+- apiVersion: rbac.authorization.k8s.io/v1
+  kind: RoleBinding
+  metadata:
+    name: {{ role.rbac_level }}
+    namespace: {{ role.name }}
+    labels:
+      ichp.ing.net/requester-rolebinding: ''
+  roleRef:
+    apiGroup: rbac.authorization.k8s.io
+    kind: ClusterRole
+    name: {{ role.rbac_level }}
+  subjects:
+  - apiGroup: rbac.authorization.k8s.io
+    kind: User
+    name: {{ role.requester }}
+- apiVersion: networking.k8s.io/v1
+  kind: NetworkPolicy
+  metadata:
+    name: allow-from-ichp-infra
+    namespace: {{ role.name }}
+  spec:
+    ingress:
+    - from:
+      - namespaceSelector:
+          matchLabels:
+            ichp_infra: "true"
+    podSelector: {}
+    policyTypes:
+    - Ingress
+- apiVersion: networking.k8s.io/v1
+  kind: NetworkPolicy
+  metadata:
+    name: allow-from-openshift-ingress
+    namespace: {{ role.name }}
+  spec:
+    ingress:
+    - from:
+      - namespaceSelector:
+          matchLabels:
+            network.openshift.io/policy-group: ingress
+    podSelector: {}
+    policyTypes:
+    - Ingress
+- apiVersion: networking.k8s.io/v1
+  kind: NetworkPolicy
+  metadata:
+    name: allow-from-same-namespace
+    namespace: {{ role.name }}
+  spec:
+    ingress:
+    - from:
+      - podSelector: {}
+    podSelector: {}
+    policyTypes:
+    - Ingress
+- apiVersion: networking.k8s.io/v1
+  kind: NetworkPolicy
+  metadata:
+    name: deny-from-all
+    namespace: {{ role.name }}
+  spec:
+    podSelector: {}
+    policyTypes:
+    - Ingress
+- apiVersion: v1
+  kind: ResourceQuota
+  metadata:
+    name: compute-quota
+    namespace: {{ role.name }}
+  spec:
+    hard:
+      requests.cpu: {{ role.quota.requests.cpu | default("1500m") }}
+      requests.memory: {{ role.quota.requests.memory | default("2048Mi") }}
+      limits.cpu: {{ role.quota.limits.cpu | default("4000m") }}
+      limits.memory: {{ role.quota.limits.memory | default("4096Mi") }}
+- apiVersion: v1
+  kind: ResourceQuota
+  metadata:
+    name: storage-quota
+    namespace: {{ role.name }}
+  spec:
+    hard:
+      persistentvolumeclaims: 0
+      requests.storage: "0"
+      requests.ephemeral-storage: 2048Mi
+      limits.ephemeral-storage: 4096Mi
+- apiVersion: v1
+  kind: LimitRange
+  metadata:
+    name: limit-ranges
+    namespace: {{ role.name }}
+  spec:
+    limits:
+      - type: Container
+        max:
+          cpu: {{ role.lrange.max.cpu | default("4000m") }}
+          memory: {{ role.lrange.max.memory | default("4096Mi") }}
+        min:
+          cpu: {{ role.lrange.min.cpu | default("50m") }}
+          memory: {{ role.lrange.min.memory|  default("64Mi") }}
+        maxLimitRequestRatio:
+          cpu: {{ role.lrange.ratio.cpu | default(4) }}
+          memory: {{ role.lrange.ratio.memory | default(4) }}
+        default:
+          cpu: {{ role.lrange.default.limit.cpu | default((role.lrange.min.cpu | default("50m") | regex_replace('m$', '') | int) * (role.lrange.ratio.cpu | default(4))) | regex_replace('m$', '') }}m
+          memory: {{ role.lrange.default.limit.memory | default((role.lrange.min.memory | default("64Mi") | regex_replace('Mi$', '') | int) * (role.lrange.ratio.memory | default(4))) | regex_replace('Mi$', '') }}Mi
+        defaultRequest:
+          cpu: {{ role.lrange.default.request.cpu | default(role.lrange.min.cpu | default("50m")) }}
+          memory: {{ role.lrange.default.request.memory | default(role.lrange.min.memory | default("64Mi")) }}
+{% endif %}
+- apiVersion: k8s.ovn.org/v1
+  kind: EgressIP
+  metadata:
+    name: egress-ns-{{ role.name }}
+    labels:
+      egress.for.namespace: {{ role.name }}
+{% if (role.state | default("present")) == "present" %}
+  spec:
+    egressIPs:
+      - {{ role.egress_ip }}
+    namespaceSelector:
+      matchLabels:
+        kubernetes.io/metadata.name: {{ role.name }}
+    podSelector: {}
+{% endif %}
+...

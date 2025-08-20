@@ -1,0 +1,68 @@
+---
+# Pass variables to this playbook on the command line (-e):
+#
+#   user:         the user requesting the project (role.requester)
+#   project:      the name of the project (role.name)
+#   rbac:         last token of "ichp-project-${foo}"
+#                 (admin, editor, viewer, debugger)
+#                 (becomes role.rbac_level, defaults to "editor")
+#
+# For anything more complex, create a vars file and load it (-e @file.yml).
+# See the structure of the vars below. Generally do not set egress_ip.
+#
+# TODO: establish egress IP?
+# TODO: remove egress IPs without their corresponding projects
+#
+- name: Create an ICHP-lookalike project.
+  hosts: workstation.lab.example.com
+  gather_subset: min
+  become: no
+  tasks:
+    # Get auth info, and test comms.
+    - include_role:
+        name: check-env
+        apply:
+          tags:
+            - check
+      tags:
+        - check
+    - include_role:
+        name: create-ichp-project
+        apply:
+          tags:
+            - create
+      vars:
+        role:
+          requester: "{{ user }}"
+          name: "{{ project }}"
+          displayname: "{{ displayname | default(omit) }}"
+          rbac_level: "ichp-project-{{ rbac | default('editor') }}"
+          egress_ip: "192.168.50.38"
+          #egress_ip:      an available egress IP to allocate to the project
+          #quota:          compute resourcequotas
+          #  requests:       compute reservation
+          #    cpu:            max cpu reserved (1500m, 1.5 CPU)
+          #    memory:         max memory reserved (2048Mi, 2Gi)
+          #  limits:         compute limits
+          #    cpu:            max cpu consumed (4000m, 4 CPUs)
+          #    memory:         max memory consumed (4096Mi, 4Gi)
+          #lrange:         compute limitranges, for both container and pod
+          #  default:        default limits and requests (no defaults)
+          #    limit:
+          #      cpu:
+          #      memory:
+          #    request:
+          #      cpu:
+          #      memory:
+          #  max:            maximum limits
+          #    cpu:            maximum cpu limit (4000m, 4 cpus)
+          #    memory:         maximum memory limit (4096Mi, 4Gi)
+          #  min:            minimum requests
+          #    cpu:            minimum requested cpu (50m, 5%)
+          #    memory:         minimum requested memory (64Mi)
+          #  ratio:          max limit-to-request ratio (x-to-1)
+          #    cpu:            cpu lrr (4)
+          #    memory:         memory lrr (4)
+      tags:
+        - create
+...
