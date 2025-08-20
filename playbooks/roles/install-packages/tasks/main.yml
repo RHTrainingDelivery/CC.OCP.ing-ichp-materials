@@ -1,0 +1,13 @@
+---
+# Split off from check-env role to optimize playbooks that only need k8s auth.
+- name: We need some packages to be there
+  become: yes
+  yum:
+    name:
+      - python3-jmespath
+      - python3.11-jmespath
+      - python3-kubernetes
+      - ansible-collection-ansible-posix
+      - ansible-collection-community-general
+    state: latest
+...

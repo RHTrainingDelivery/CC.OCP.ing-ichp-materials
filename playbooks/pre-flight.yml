@@ -4,7 +4,15 @@
   gather_subset: min
   become: no
   tasks:
-    # Deploy packages, get auth info, etc.
+    # Deploy packages.
+    - include_role:
+        name: install-packages
+        apply:
+          tags:
+            - install
+      tags:
+        - install
+    # Get auth info, check cluster comms.
     - include_role:
         name: check-env
         apply:
@@ -12,7 +20,7 @@
             - check
       tags:
         - check
-    # THIS MUST BE BEFORE FIX OPERATORS!
+    # THIS MUST BE APPLIED BEFORE FIX OPERATORS!
     - include_role:
         name: remove-operators
         apply:
@@ -48,7 +56,7 @@
       tags:
         - prep
         - deploy
-    # Ensure RBAC resources (ClusterRoles and Groups) are there.
+    # Ensure RBAC resources (ClusterRoles and global Groups) are there.
     - include_role:
         name: setup-rbac
         apply:
@@ -58,7 +66,7 @@
       tags:
         - prep
         - setup
-    # Ensure a Keycloak is there.
+    # Ensure a Keycloak is there (use rhbk_state=absent var to remove).
     - include_role:
         name: deploy-rhbk
         apply:
@@ -79,6 +87,12 @@
         - prep
         - auth
 
+# TODO: enable user workload monitoring
+# TODO: deploy grafana (?)
+# TODO: deploy logging (?)
+# TODO: logging requires minio
+# TODO: label infra projects with ichp_infra: "true"
+
 # Some additional configuration for infra.
 - name: Ensure HAProxy on utility does not forward plaintext HTTP to OpenShift.
   hosts: utility.lab.example.com
@@ -94,5 +108,4 @@
       tags:
         - prep
         - ingress
-
 ...

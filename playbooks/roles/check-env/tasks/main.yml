@@ -24,17 +24,6 @@
     flat: yes
   loop: "{{ clusters }}"
 
-- name: We need some packages to be there
-  become: yes
-  yum:
-    name:
-      - python3-jmespath
-      - python3.11-jmespath
-      - python3-kubernetes
-      - ansible-collection-ansible-posix
-      - ansible-collection-community-general
-    state: latest
-
 - name: Verify cluster connectivity
   kubernetes.core.k8s_cluster_info:
     kubeconfig: tmp/kubeconfig-{{ item }}
