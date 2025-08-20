@@ -95,6 +95,7 @@
 # TODO: label nodes with k8s.ovn.org/egress-assignable=
 # TODO: define egress IP range somewhere (?)
 # TODO: create a private network (nmstate + bridges?)
+# TODO: only add self-provisioner role to certain groups
 
 # Some additional configuration for infra.
 - name: Ensure HAProxy on utility does not forward plaintext HTTP to OpenShift.
