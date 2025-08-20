@@ -1,8 +1,8 @@
 ---
 # Required variables:
-#   rhbk_fqdn             the FQDN of the Keycloak server
-#   rhbk.admin.username   admin user
-#   rhbk.admin.password   admin password
+#   rhbk_fqdn             the FQDN of the Keycloak server (XXX will blow up without it)
+#   rhbk.admin.username   admin user (default "rhbk")
+#   rhbk.admin.password   admin password (default "secret")
 #
 # Registers (or refreshes) a fact called admin_token which you can use for auth.
 #
