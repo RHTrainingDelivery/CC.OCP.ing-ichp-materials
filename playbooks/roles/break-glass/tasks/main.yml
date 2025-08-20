@@ -74,13 +74,31 @@
     validate_certs: no
     api_version: rbac.authorization.k8s.io/v1
     kind: rolebinding
-    name: ichp-break-glass-rb
+    name: ichp-break-glass-rb-admin
     namespace: "{{ role.name }}"
     resource_definition:
       roleRef:
         apiGroup: rbac.authorization.k8s.io
         kind: ClusterRole
         name: ichp-project-admin
+      subjects:
+        - apiGroup: rbac.authorization.k8s.io
+          kind: User
+          name: "{{ requester }}"
+
+- name: Create a debugger rolebinding.
+  kubernetes.core.k8s:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: rbac.authorization.k8s.io/v1
+    kind: rolebinding
+    name: ichp-break-glass-rb-debugger
+    namespace: "{{ role.name }}"
+    resource_definition:
+      roleRef:
+        apiGroup: rbac.authorization.k8s.io
+        kind: ClusterRole
+        name: ichp-project-debugger
       subjects:
         - apiGroup: rbac.authorization.k8s.io
           kind: User
