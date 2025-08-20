@@ -11,6 +11,8 @@ items:
       openshift.io/description: "ICHP Namespace Requested For {{ role.requester }}"
       openshift.io/display-name: "{{ role.displayname | default(role.name) }}"
       openshift.io/requester: {{ role.requester }}
+    labels:
+      ichp.ing.net/generated: ''
 {% endif %}
     name: {{ role.name }}
   spec: {}
@@ -22,6 +24,7 @@ items:
     namespace: {{ role.name }}
     labels:
       ichp.ing.net/requester-rolebinding: ''
+      ichp.ing.net/generated: ''
   roleRef:
     apiGroup: rbac.authorization.k8s.io
     kind: ClusterRole
@@ -35,6 +38,8 @@ items:
   metadata:
     name: allow-from-ichp-infra
     namespace: {{ role.name }}
+    labels:
+      ichp.ing.net/generated: ''
   spec:
     ingress:
     - from:
@@ -49,6 +54,8 @@ items:
   metadata:
     name: allow-from-openshift-ingress
     namespace: {{ role.name }}
+    labels:
+      ichp.ing.net/generated: ''
   spec:
     ingress:
     - from:
@@ -63,6 +70,8 @@ items:
   metadata:
     name: allow-from-same-namespace
     namespace: {{ role.name }}
+    labels:
+      ichp.ing.net/generated: ''
   spec:
     ingress:
     - from:
@@ -75,6 +84,8 @@ items:
   metadata:
     name: deny-from-all
     namespace: {{ role.name }}
+    labels:
+      ichp.ing.net/generated: ''
   spec:
     podSelector: {}
     policyTypes:
@@ -84,6 +95,8 @@ items:
   metadata:
     name: compute-quota
     namespace: {{ role.name }}
+    labels:
+      ichp.ing.net/generated: ''
   spec:
     hard:
       requests.cpu: {{ role.quota.requests.cpu | default("1500m") }}
@@ -95,6 +108,8 @@ items:
   metadata:
     name: storage-quota
     namespace: {{ role.name }}
+    labels:
+      ichp.ing.net/generated: ''
   spec:
     hard:
       persistentvolumeclaims: 0
@@ -106,6 +121,8 @@ items:
   metadata:
     name: limit-ranges
     namespace: {{ role.name }}
+    labels:
+      ichp.ing.net/generated: ''
   spec:
     limits:
       - type: Container
@@ -131,6 +148,7 @@ items:
     name: egress-ns-{{ role.name }}
     labels:
       egress.for.namespace: {{ role.name }}
+      ichp.ing.net/generated: ''
 {% if (role.state | default("present")) == "present" %}
   spec:
     egressIPs:
