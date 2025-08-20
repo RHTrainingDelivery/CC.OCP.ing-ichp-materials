@@ -1,0 +1,18 @@
+---
+# Applies infra labels to key projects.
+- name: Apply a label patch to all the relevant projects.
+  kubernetes.core.k8s:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: v1
+    kind: namespace
+    name: "{{ item }}"
+    state: patched
+    resource_definition:
+      metadata:
+        labels:
+          ichp_infra: "true"
+  loop:
+    - openshift-monitoring
+    - openshift-user-workload-monitoring
+...

@@ -116,12 +116,23 @@
         - prep
         - setup
         - monitor
+    # Apply some labels to projects.
+    - include_role:
+        name: apply-infra-labels
+        apply:
+          tags:
+            - prep
+            - setup
+            - labels
+      tags:
+        - prep
+        - setup
+        - labels
 
 # TODO: deploy grafana (?)
 # TODO: deploy logging (?)
 # TODO: logging requires minio
 # TODO: create a private network (nmstate + bridges?)
-# TODO: apply ichp_infra: true labels to projects
 
 # Some additional configuration for infra.
 - name: Ensure HAProxy on utility does not forward plaintext HTTP to OpenShift.
