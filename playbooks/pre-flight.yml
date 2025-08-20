@@ -104,8 +104,19 @@
         - prep
         - setup
         - auth
+    # Enable user workload monitoring.
+    - include_role:
+        name: user-workload-monitoring
+        apply:
+          tags:
+            - prep
+            - setup
+            - monitor
+      tags:
+        - prep
+        - setup
+        - monitor
 
-# TODO: enable user workload monitoring
 # TODO: deploy grafana (?)
 # TODO: deploy logging (?)
 # TODO: logging requires minio

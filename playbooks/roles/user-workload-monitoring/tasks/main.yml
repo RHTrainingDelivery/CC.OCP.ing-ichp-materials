@@ -1,0 +1,56 @@
+---
+# Ensures user workload monitoring is enabled.
+#
+# XXX: Only needed for the TODO items below.
+#- name: Load the main configmap if it is there already.
+#  kubernetes.core.k8s_info:
+#    kubeconfig: tmp/kubeconfig-ocp4
+#    validate_certs: no
+#    api_version: v1
+#    kind: configmap
+#    namespace: openshift-monitoring
+#    name: cluster-monitoring-config
+#  register: cmc_is_there
+#
+# TODO
+#- name: Extract the contents of config.yaml from cm if it existed.
+#
+# TODO
+#- name: Merge the existing config.yaml and our additions.
+#
+# TODO: do the same for uwm-alertmanager
+#
+# TODO: might want to add alert-routing-edit rolebinding to create-ichp-project/templates/project-template.yml
+#
+# XXX: Exclude projects by adding "openshift.io/user-monitoring=false" label.
+#
+- name: Ensure that the main configmap is defined.
+  kubernetes.core.k8s:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: v1
+    kind: configmap
+    namespace: openshift-monitoring
+    name: cluster-monitoring-config
+    resource_definition:
+      data:
+        config.yaml: |
+          enableUserWorkload: true
+          alertmanagerMain:
+            enableUserAlertmanagerConfig: true
+
+- name: Ensure that the uwm alertmanager configmap is defined.
+  kubernetes.core.k8s:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: v1
+    kind: configmap
+    namespace: openshift-user-workload-monitoring
+    name: user-workload-monitoring-config
+    resource_definition:
+      data:
+        config.yaml: |
+          alertmanager:
+            enabled: true
+            enableAlertmanagerConfig: true
+...
