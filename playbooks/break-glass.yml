@@ -1,0 +1,30 @@
+---
+# Adds an emergency admin role to project requester and annotates & labels it as tainted.
+#
+# Pass variables to this playbook on the command line (-e):
+#
+#   project:      the name of the project (role.name)
+#
+- name: Ensure an ICHP-lookalike project is given admin rights.
+  hosts: workstation.lab.example.com
+  gather_subset: min
+  become: no
+  tasks:
+    - name: Ensure that the parameters are specified.
+      ansible.builtin.assert:
+        that:
+          - project is defined
+        success_msg: "OK, got all parameters, continuing."
+        fail_msg: "FATAL: You must specify the name of the project to delete using the \"project\" variable."
+
+    # Get auth info, and test comms.
+    - include_role:
+        name: check-env
+
+    - include_role:
+        name: break-glass
+      vars:
+        role:
+          name: "{{ project }}"
+...
+

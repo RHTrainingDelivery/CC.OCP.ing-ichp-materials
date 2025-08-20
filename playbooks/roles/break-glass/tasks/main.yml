@@ -1,0 +1,88 @@
+---
+# Adds ichp-project-admin role to project requester and taints the project.
+#
+- name: Check if the project exists.
+  kubernetes.core.k8s_info:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: v1
+    kind: namespace
+    name: "{{ role.name }}"
+  register: project_state
+
+- name: Some basic assertions.
+  ansible.builtin.assert:
+    that:
+      - project_state.resources is defined
+      - project_state.resources | length == 1
+    success_msg: "OK, project found."
+    fail_msg: "FATAL: project \"{{ role.name }}\" not found."
+
+- name: Verify that this is an ICHP project.
+  ansible.builtin.assert:
+    that:
+      - project_state.resources[0].metadata.labels.keys() is contains('ichp.ing.net/generated')
+    success_msg: "OK, project is an ICHP project."
+    fail_msg: "FATAL: project is NOT an ICHP project."
+
+- name: Check if we can see who the requester is.
+  ansible.builtin.assert:
+    that:
+      - project_state.resources[0].metadata.annotations['openshift.io/requester'] is defined
+    success_msg: "OK, found project requester."
+    fail_msg: "FATAL: can not find out who requested the project."
+
+- name: Remember the requester as a fact.
+  ansible.builtin.set_fact:
+    requester: "{{ project_state.resources[0].metadata.annotations['openshift.io/requester'] }}"
+
+- name: Verify that this is an actual user.
+  kubernetes.core.k8s_info:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: user.openshift.io/v1
+    kind: user
+    name: "{{ requester }}"
+  register: requester_user
+
+- name: Assertions about the user.
+  ansible.builtin.assert:
+    that:
+      - requester_user.resources is defined
+      - requester_user.resources | length == 1
+    success_msg: "OK, \"{{ requester }}\" is an existing user."
+    fail_msg: "FATAL: \"{{ requester }}\" user does not exist."
+
+- name: Annotate and label the project as tainted.
+  kubernetes.core.k8s_info:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: v1
+    kind: namespace
+    name: "{{ role.name }}"
+    state: patched
+    resource_definition:
+      metadata:
+        annotations:
+          ichp.ing.net/tainted: "true"
+        labels:
+          ichp.ing.net/tainted: "true"
+
+- name: Create an admin rolebinding.
+  kubernetes.core.k8s:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: rbac.authorization.k8s.io/v1
+    kind: rolebinding
+    name: ichp-break-glass-rb
+    namespace: "{{ role.name }}"
+    resource_definition:
+      roleRef:
+        apiGroup: rbac.authorization.k8s.io
+        kind: ClusterRole
+        name: ichp-project-admin
+      subjects:
+        apiGroup: rbac.authorization.k8s.io
+        kind: User
+        name: "{{ requester }}"
+...
