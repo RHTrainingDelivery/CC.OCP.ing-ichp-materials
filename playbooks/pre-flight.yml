@@ -92,6 +92,9 @@
 # TODO: deploy logging (?)
 # TODO: logging requires minio
 # TODO: label infra projects with ichp_infra: "true"
+# TODO: label nodes with k8s.ovn.org/egress-assignable=
+# TODO: define egress IP range somewhere (?)
+# TODO: create a private network (nmstate + bridges?)
 
 # Some additional configuration for infra.
 - name: Ensure HAProxy on utility does not forward plaintext HTTP to OpenShift.
