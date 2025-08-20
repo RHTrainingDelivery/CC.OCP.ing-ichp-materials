@@ -30,11 +30,10 @@
     resource_definition:
       roleRef:
         apiGroup: rbac.authorization.k8s.io
-        kind: ClusterRrole
+        kind: ClusterRole
         name: "{{ item }}"
       subjects:
-        - apiGroup: user.openshift.io
-          kind: Group
+        - kind: Group
           name: "{{ item | ansible.builtin.regex_replace('ichp', 'global') }}s"
   loop: "{{ create_cluster_roles }}"
 ...
