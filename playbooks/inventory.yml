@@ -17,6 +17,7 @@ all:
     openshift:
       rhbk_client_id: openshift
       create_groups: yes
+      egress_range: 192.168.50.128/26
 
     rhbk:
       namespace: keycloak

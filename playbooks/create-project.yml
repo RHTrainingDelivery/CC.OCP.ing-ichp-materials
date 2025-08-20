@@ -10,7 +10,7 @@
 # For anything more complex, create a vars file and load it (-e @file.yml).
 # See the structure of the vars below. Generally do not set egress_ip.
 #
-# TODO: establish egress IP?
+# TODO: establish egress IP? (openshift.egress_range)
 # TODO: remove egress IPs without their corresponding projects
 #
 - name: Create an ICHP-lookalike project.
