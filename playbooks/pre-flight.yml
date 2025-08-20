@@ -43,7 +43,7 @@
       tags:
         - prep
         - fix
-    # Re-apply any operators that have had their catalog sources changed.
+    # Re-apply any operators that have had their catalog sources changed and install new ones.
     - include_role:
         name: deploy-operators
         apply:
@@ -56,6 +56,18 @@
       tags:
         - prep
         - deploy
+    # Apply some labels to nodes.
+    - include_role:
+        name: apply-node-labels
+        apply:
+          tags:
+            - prep
+            - setup
+            - labels
+      tags:
+        - prep
+        - setup
+        - labels
     # Ensure RBAC resources (ClusterRoles and global Groups) are there.
     - include_role:
         name: setup-rbac
@@ -97,10 +109,8 @@
 # TODO: deploy grafana (?)
 # TODO: deploy logging (?)
 # TODO: logging requires minio
-# TODO: label infra projects with ichp_infra: "true"
-# TODO: label nodes with k8s.ovn.org/egress-assignable=
-# TODO: define egress IP range somewhere (?)
 # TODO: create a private network (nmstate + bridges?)
+# TODO: apply ichp_infra: true labels to projects
 
 # Some additional configuration for infra.
 - name: Ensure HAProxy on utility does not forward plaintext HTTP to OpenShift.
