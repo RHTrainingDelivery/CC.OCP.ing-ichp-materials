@@ -54,7 +54,7 @@
     fail_msg: "FATAL: \"{{ requester }}\" user does not exist."
 
 - name: Annotate and label the project as tainted.
-  kubernetes.core.k8s_info:
+  kubernetes.core.k8s:
     kubeconfig: tmp/kubeconfig-ocp4
     validate_certs: no
     api_version: v1
