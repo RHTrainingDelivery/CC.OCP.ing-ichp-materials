@@ -63,18 +63,22 @@
           tags:
             - prep
             - setup
+            - rbac
       tags:
         - prep
         - setup
+        - rbac
     # Ensure a Keycloak is there (use rhbk_state=absent var to remove).
     - include_role:
         name: deploy-rhbk
         apply:
           tags:
             - prep
+            - setup
             - sso
       tags:
         - prep
+        - setup
         - sso
     # Ensure OpenShift OAuth is using the Keycloak.
     - include_role:
@@ -82,9 +86,11 @@
         apply:
           tags:
             - prep
+            - setup
             - auth
       tags:
         - prep
+        - setup
         - auth
 
 # TODO: enable user workload monitoring
@@ -95,7 +101,6 @@
 # TODO: label nodes with k8s.ovn.org/egress-assignable=
 # TODO: define egress IP range somewhere (?)
 # TODO: create a private network (nmstate + bridges?)
-# TODO: only add self-provisioner role to certain groups
 
 # Some additional configuration for infra.
 - name: Ensure HAProxy on utility does not forward plaintext HTTP to OpenShift.
