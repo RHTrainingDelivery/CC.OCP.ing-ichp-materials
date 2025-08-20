@@ -21,7 +21,7 @@
 #   - admin credentials
 #
 - name: Check that the ingresscontroller's defaultCertificate is set
-  k8s_info:
+  kubernetes.core.k8s_info:
     kubeconfig: tmp/kubeconfig-ocp4
     validate_certs: no
     api_version: operator.openshift.io/v1
@@ -31,7 +31,7 @@
   register: ingress_ca
 
 - name: Get the router's default CA content
-  k8s_info:
+  kubernetes.core.k8s_info:
     kubeconfig: tmp/kubeconfig-ocp4
     validate_certs: no
     api_version: v1
@@ -41,11 +41,11 @@
   register: ingress_ca
 
 - name: Store the CA cert as an actual fact
-  set_fact:
+  ansible.builtin.set_fact:
     ingress_ca: "{{ ingress_ca.resources[0].data['tls.crt'] }}"
 
 - name: Check on oauth/cluster
-  k8s_info:
+  kubernetes.core.k8s_info:
     kubeconfig: tmp/kubeconfig-ocp4
     validate_certs: no
     api_version: config.openshift.io/v1
@@ -53,7 +53,7 @@
     name: cluster
   register: cluster_auth
 
-- assert:
+- ansible.builtin.assert:
     that:
       - (cluster_auth.resources | length) == 1
       - (cluster_auth.resources[0].spec.identityProviders | length) >= 1
@@ -81,7 +81,7 @@
     msg: Using "https://{{ rhbk_fqdn }}" as the hostname.
 
 - name: Make certain router CA CM exists in openshift-config
-  k8s:
+  kubernetes.core.k8s:
     kubeconfig: tmp/kubeconfig-ocp4
     validate_certs: no
     api_version: v1
@@ -96,7 +96,7 @@
         ca.crt: "{{ ingress_ca | string | b64decode }}"
 
 - name: Make certain client secret exists in openshift-config
-  k8s:
+  kubernetes.core.k8s:
     kubeconfig: tmp/kubeconfig-ocp4
     validate_certs: no
     api_version: v1
@@ -112,13 +112,13 @@
         clientSecret: "{{ (rhbk | community.general.json_query('clients[?id==`' + (openshift.rhbk_client_id | default('openshift')) + '`].secret'))[0] | b64encode }}"
 
 - name: Figure out what to do with oauth/cluster - option 1
-  set_fact:
+  ansible.builtin.set_fact:
     oauth_op: add
     oauth_path: /spec/identityProviders/-
   when: (cluster_auth.resources[0].spec.identityProviders | length) == 1
 
 - name: Figure out what to do with oauth/cluster - option 2
-  set_fact:
+  ansible.builtin.set_fact:
     oauth_op: replace
     oauth_path: /spec/identityProviders/1
   when: (cluster_auth.resources[0].spec.identityProviders | length) == 2
