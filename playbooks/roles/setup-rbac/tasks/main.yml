@@ -1,6 +1,7 @@
 ---
 # Creates all ING-related ClusterRoles in the target cluster.
 # Ensures that corresponding OpenShift groups exist.
+# Only adds self-provisioner role to admin groups.
 - name: Make sure the cluster roles are there
   kubernetes.core.k8s:
     kubeconfig: tmp/kubeconfig-ocp4
@@ -36,4 +37,60 @@
         - kind: Group
           name: "{{ item | ansible.builtin.regex_replace('ichp', 'global') }}s"
   loop: "{{ create_cluster_roles }}"
+
+- name: Get all CRBs.
+  kubernetes.core.k8s_info:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: rbac.authorization.k8s.io/v1
+    kind: clusterrolebinding
+  register: all_crbs
+
+- name: Weed out CRBs that assign a self-provisioner CR.
+  ansible.builtin.set_fact:
+    sp_crbs: "{{ all_crbs | ansible.builtin.json_query('resources[?roleRef.name==`self-provisioner`].metadata.name') }}"
+
+- name: Warn if more than one role assigns self-provisioner.
+  ansible.builtin.pause:
+    prompt: |
+      **************************************************************************
+      * WARNING: More than one ClusterRoleBinding assigns the self-provisioner *
+      *          role to users. This role will fix the default one and remove  *
+      *          any others.                                                   *
+      *                                                                        *
+      *          Interrupt execution by pressing Ctrl-C if this is not OK.     *
+      **************************************************************************
+    seconds: 5
+  when:
+    - (sp_crbs | length > 1) or (sp_crbs is not contains("self-provisioners"))
+
+- name: Remove any CRBs that are not the default self-provisioners CRB.
+  kubernetes.core.k8s:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: rbac.authorization.k8s.io/v1
+    kind: clusterrolebinding
+    name: "{{ item }}"
+    state: absent
+  loop: "{{ sp_crbs | difference(['self-provisioners']) }}"
+
+- name: Ensure that the self-provisioners CRB lists only admin groups.
+  kubernetes.core.k8s:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: rbac.authorization.k8s.io/v1
+    kind: clusterrolebinding
+    name: self-provisioners
+    resource_definition:
+      roleRef:
+        apiGroup: rbac.authorization.k8s.io
+        kind: ClusterRole
+        name: self-provisioner
+      subjects:
+      - apiGroup: rbac.authorization.k8s.io
+        kind: Group
+        name: admins
+      - apiGroup: rbac.authorization.k8s.io
+        kind: Group
+        name: global-project-admins
 ...
