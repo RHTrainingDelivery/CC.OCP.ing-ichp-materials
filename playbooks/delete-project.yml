@@ -1,4 +1,6 @@
 ---
+# Removes the (previously created) ICHP project from the cluster.
+#
 # Pass variables to this playbook on the command line (-e):
 #
 #   project:      the name of the project (role.name)
@@ -18,21 +20,11 @@
     # Get auth info, and test comms.
     - include_role:
         name: check-env
-        apply:
-          tags:
-            - check
-      tags:
-        - check
 
     - include_role:
         name: create-ichp-project
-        apply:
-          tags:
-            - delete
       vars:
         role:
           state: absent
           name: "{{ project }}"
-      tags:
-        - delete
 ...
