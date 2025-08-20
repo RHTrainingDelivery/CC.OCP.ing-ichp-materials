@@ -78,4 +78,21 @@
       tags:
         - prep
         - auth
+
+# Some additional configuration for infra.
+- name: Ensure HAProxy on utility does not forward plaintext HTTP to OpenShift.
+  hosts: utility.lab.example.com
+  gather_subset: min
+  become: yes
+  tasks:
+    - include_role:
+        name: setup-ingress
+        apply:
+          tags:
+            - prep
+            - ingress
+      tags:
+        - prep
+        - ingress
+
 ...
