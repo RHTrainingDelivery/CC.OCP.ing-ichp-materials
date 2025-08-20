@@ -1,0 +1,33 @@
+---
+# Ensures that HAProxy on target host only allows port 443.
+#
+# XXX: This role is completely ROL-specific and requires HAProxy already
+#       deployed on the target host, using a very specific config file format.
+#
+- name: Ensure the entire insecure frontend section is commented out.
+  become: yes
+  ansible.builtin.replace:
+    path: /etc/haproxy/haproxy.cfg
+    after: "# round robin balancing for OCP4 Ingress Insecure Port"
+    before: "# round robin balancing for OCP4 Ingress Secure Port"
+    regexp: "^([^#])"
+    replace: "#\\g<1>"
+  notify:
+    - restart haproxy
+
+- name: Ensure there is a redirect block for incoming requests on 80.
+  become: yes
+  ansible.builtin.blockinfile:
+    path: /etc/haproxy/haproxy.cfg
+    marker: "# {mark} FRONTEND REDIRECT FOR INSECURE HTTP"
+    marker_begin: "START"
+    marker_end: "END"
+    insertafter: EOF
+    block: |
+      frontend ingress_insecure_redirect
+        bind 192.168.50.254:80
+        mode http
+        http-request redirect scheme https code 301 unless { ssl_fc }
+  notify:
+    - restart haproxy
+...

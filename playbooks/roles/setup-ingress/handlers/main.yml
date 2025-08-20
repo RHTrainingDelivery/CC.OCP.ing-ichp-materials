@@ -1,0 +1,8 @@
+---
+# Handler for the setup-ingress role.
+- name: restart haproxy
+  become: yes
+  ansible.builtin.systemd_service:
+    name: haproxy
+    state: restarted
+...
