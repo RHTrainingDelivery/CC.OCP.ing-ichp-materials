@@ -24,6 +24,8 @@
 #
 # XXX: Exclude projects by adding "openshift.io/user-monitoring=false" label.
 #
+# TODO: Wait for components to start up?
+#
 - name: Ensure that the main configmap is defined.
   kubernetes.core.k8s:
     kubeconfig: tmp/kubeconfig-ocp4
