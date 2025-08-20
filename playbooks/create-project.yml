@@ -20,6 +20,21 @@
   gather_subset: min
   become: no
   tasks:
+    - name: Ensure that the parameters are specified.
+      ansible.builtin.assert:
+        that:
+          - project is defined
+          - user is defined
+        success_msg: "OK, got all parameters, continuing."
+        fail_msg: "FATAL: You must specify the \"user\" and \"project\" variables at minimum."
+
+    - name: Check that rbac parameter is an acceptable value.
+      ansible.builtin.assert:
+        that:
+          - (rbac | default('editor')) in ['admin', 'editor', 'viewer']
+        success_msg: "OK, rbac role is fine."
+        fail_msg: "FATAL: \"rbac\" role can only be one of ['admin', 'editor', 'viewer']."
+
     # Get auth info, and test comms.
     - include_role:
         name: check-env
@@ -30,7 +45,7 @@
         role:
           requester: "{{ user }}"
           name: "{{ project }}"
-          displayname: "{{ displayname | default(omit) }}"
+          displayname: "{{ displayname | default(project) }}"
           rbac_level: "ichp-project-{{ rbac | default('editor') }}"
           egress_ip: "192.168.50.38"
           #egress_ip:      an available egress IP to allocate to the project
