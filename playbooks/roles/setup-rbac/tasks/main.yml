@@ -19,4 +19,22 @@
     kind: group
     name: "{{ item | ansible.builtin.regex_replace('ichp', 'global') }}s"
   loop: "{{ create_cluster_roles }}"
+
+- name: Ensure that global groups have roles assigned to them.
+  kubernetes.core.k8s:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: rbac.authorization.k8s.io/v1
+    kind: clusterrolebinding
+    name: "{{ item }}s"
+    resource_definition:
+      roleRef:
+        apiGroup: rbac.authorization.k8s.io/v1
+        kind: clusterrole
+        name: "{{ item }}"
+      subjects:
+        - apiGroup: user.openshift.io
+          kind: group
+          name: "{{ item | ansible.builtin.regex_replace('ichp', 'global') }}s"
+  loop: "{{ create_cluster_roles }}"
 ...
