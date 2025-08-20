@@ -82,7 +82,7 @@
         kind: ClusterRole
         name: ichp-project-admin
       subjects:
-        apiGroup: rbac.authorization.k8s.io
-        kind: User
-        name: "{{ requester }}"
+        - apiGroup: rbac.authorization.k8s.io
+          kind: User
+          name: "{{ requester }}"
 ...
