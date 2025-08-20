@@ -2,7 +2,7 @@
 # Applies egress labels to worker nodes.
 # TODO: any other labels? zone? region?
 - name: Get a list of worker nodes.
-  kubernets.core.k8s_info:
+  kubernetes.core.k8s_info:
     kubeconfig: tmp/kubeconfig-ocp4
     validate_certs: no
     api_version: v1
@@ -12,7 +12,7 @@
   register: workers
 
 - name: Apply a label patch to all the worker nodes.
-  kubernets.core.k8s:
+  kubernetes.core.k8s:
     kubeconfig: tmp/kubeconfig-ocp4
     validate_certs: no
     api_version: v1
