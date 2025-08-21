@@ -248,7 +248,7 @@
           termination: reencrypt
           insecureEdgeTerminationPolicy: Redirect
 
-- name: Wait for the Keycloak service to report ready.
+- name: Wait for the Keycloak resource to report ready.
   kubernetes.core.k8s_info:
     kubeconfig: tmp/kubeconfig-ocp4
     validate_certs: no
@@ -262,6 +262,16 @@
     - rhbk_ready.resources | length == 1
     - rhbk_ready.resources[0].status is defined
     - (rhbk_ready.resources[0].status | community.general.json_query('conditions[?type==`Ready`].status'))[0]
+  retries: 24
+  delay: 5
+
+- name: Wait for the Keycloak pod to become ready.
+  ansible.builtin.uri:
+    return_content: yes
+    validate_certs: no
+    url: "https://{{ rhbk_fqdn }}/realms/{{ rhbk.realm | default('sample-realm') }}"
+  register: rhbk_is_ready
+  until: rhbk_is_ready.status == 200
   retries: 24
   delay: 5
 
