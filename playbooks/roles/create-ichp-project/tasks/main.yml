@@ -117,7 +117,7 @@
 
     #- name: ...if egress IP was specified, ensure it is available and in openshift.egress_range.
 
-  when: role.state == "present"
+  when: role.state == 'present' | default('present')
 
 - name: Apply the project template to the cluster with correct state set.
   kubernetes.core.k8s:
