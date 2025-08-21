@@ -23,6 +23,7 @@
 # TODO: might want to add alert-routing-edit rolebinding to create-ichp-project/templates/project-template.yml
 #
 # XXX: Exclude projects by adding "openshift.io/user-monitoring=false" label.
+#       https://docs.redhat.com/en/documentation/openshift_container_platform/4.16/html/monitoring/configuring-user-workload-monitoring
 #
 # TODO: Wait for components to start up?
 #         app.kubernetes.io/component=controller (prometheus operator)
