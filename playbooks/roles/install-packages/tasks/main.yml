@@ -8,6 +8,7 @@
       - python3.11-jmespath
       - python3-kubernetes
       - ansible-collection-ansible-posix
+      - ansible-collection-ansible-utils
       - ansible-collection-community-general
     state: latest
 ...
