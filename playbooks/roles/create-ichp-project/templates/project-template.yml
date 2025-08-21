@@ -152,7 +152,7 @@ items:
 {% if (role.state | default("present")) == "present" %}
   spec:
     egressIPs:
-      - {{ role.egress_ip }}
+      - {{ allocated_egressip }}
     namespaceSelector:
       matchLabels:
         kubernetes.io/metadata.name: {{ role.name }}
