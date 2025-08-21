@@ -8,7 +8,7 @@
     api_version: v1
     kind: node
     label_selectors:
-      - node-role.kubernetes.io/worker=''
+      - node-role.kubernetes.io/worker=
   register: workers
 
 - name: Apply a label patch to all the worker nodes.
@@ -22,6 +22,6 @@
     resource_definition:
       metadata:
         labels:
-          k8s.ovn.org/egress-assignable=''
-  loop: "{{ workers | ansible.builtin.json_query('resources[*].metadata.name') }}"
+          k8s.ovn.org/egress-assignable: ''
+  loop: "{{ workers | ansible.builtin.json_query('resources[*].metadata.name') | list }}"
 ...
