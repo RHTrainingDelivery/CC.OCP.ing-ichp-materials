@@ -47,7 +47,9 @@
           name: "{{ project }}"
           displayname: "{{ displayname | default(project) }}"
           rbac_level: "ichp-project-{{ rbac | default('editor') }}"
-          egress_ip: "192.168.50.38"
+          #
+          # NOTE: Other options that should be specified via vars files:
+          #
           #egress_ip:      an available egress IP to allocate to the project
           #quota:          compute resourcequotas
           #  requests:       compute reservation
@@ -56,14 +58,14 @@
           #  limits:         compute limits
           #    cpu:            max cpu consumed (4000m, 4 CPUs)
           #    memory:         max memory consumed (4096Mi, 4Gi)
-          #lrange:         compute limitranges, for both container and pod
-          #  default:        default limits and requests (no defaults)
-          #    limit:
-          #      cpu:
-          #      memory:
-          #    request:
-          #      cpu:
-          #      memory:
+          #  lrange:         compute limitranges, for both container and pod
+          #    default:        default limits and requests
+          #      limit:
+          #        cpu:          role.lrange.min.cpu * role.lrange.ratio.cpu
+          #        memory:       role.lrange.min.memory * role.lrange.ratio.memory
+          #      request:
+          #        cpu:          defaults to whatever role.lrange.min.cpu is
+          #        memory:       defaults to whatever role.lrange.min.memory is
           #  max:            maximum limits
           #    cpu:            maximum cpu limit (4000m, 4 cpus)
           #    memory:         maximum memory limit (4096Mi, 4Gi)
