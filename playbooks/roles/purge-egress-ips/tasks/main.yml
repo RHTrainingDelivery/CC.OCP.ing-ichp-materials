@@ -1,0 +1,45 @@
+---
+# Releases any egressip resources that do not have a corresponding ICHP project.
+- name: Check which egressip resources have been allocated to ICHP projects.
+  kubernetes.core.k8s_info:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: k8s.ovn.org/v1
+    kind: egressip
+    label_selectors:
+      - ichp.ing.net/generated=
+  register: egressips_allocated
+
+- name: Convert that to a list of projects names that have been allocated IPs.
+  ansible.builtin.set_fact:
+    egress_projects: "{{ (egressips_allocated | community.general.json_query('resources[*].metadata.labels') | items2dict(key_name='egress.for.namespace', value_name='ichp.ing.net/generated')).keys() }}"
+
+- name: Check which ICHP namespaces there are.
+  kubernetes.core.k8s_info:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: v1
+    kind: namespace
+    label_selectors:
+      - ichp.ing.net/generated=
+  register: ichp_namespaces
+
+- name: Convert that to a list of project names that exist.
+  ansible.builtin.set_fact:
+    existing_projects: "{{ ichp_namespaces | community.general.json_query('resources[*].metadata.name') | flatten }}"
+
+- name: Now get a list of egressips that belong to missing projects.
+  ansible.builtin.set_fact:
+    orphan_egressips: "{{ egress_projects | difference(existing_projects) }}"
+
+- name: Remove egressips without a corresponding namespace.
+  kubernetes.core.k8s:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: k8s.ovn.org/v1
+    kind: egressip
+    name: "egress-ns-{{ item }}"
+    state: absent
+  loop: "{{ orphan_egressips }}"
+...
+
