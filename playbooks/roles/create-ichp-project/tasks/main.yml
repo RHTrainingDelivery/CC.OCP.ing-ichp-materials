@@ -103,7 +103,11 @@
         success_msg: "OK, clusterrole exists."
         fail_msg: "FATAL: clusterrole ({{ role.rbac_level }}) does not exist."
 
-    - name: Get a list of allocated egress IPs
+    - name: Get a full list of IPs from openshift.egress_range.
+      ansible.builtin.set_fact:
+        egressips_full: "{{ (openshift.egress_range | ansible.utils.usable_range)['usable_ips'] }}"
+
+    - name: Get a list of allocated egress IPs in the cluster
       kubernetes.core.k8s_info:
         kubeconfig: tmp/kubeconfig-ocp4
         validate_certs: no
@@ -111,13 +115,68 @@
         kind: egressip
       register: egressips
 
-    - name: Find an available egress IP from openshift.egress_range, or...
-      debug:
-        var: egressips | community.general.json_query('resources[*].status.items[*].egressIP')
+    - name: Get the remaining available egress IPs from openshift.egress_range.
+      ansible.builtin.set_fact:
+        egressips_avail: "{{ egressips_full | difference(egressips | community.general.json_query('resources[*].status.items[*].egressIP') | flatten) }}"
 
-    #- name: ...if egress IP was specified, ensure it is available and in openshift.egress_range.
+    - name: Ensure that there are still available IPs.
+      ansible.builtin.assert:
+        that:
+          - egressips_avail | length > 0
+        success_msg: "OK, {{ egressips_avail | length }} egress IP(s) still available"
+        fail_msg: "FATAL: No egress IPs remain available. Please remove some projects and release their IPs, then retry."
+
+    - name: Find an available egress IP from openshift.egress_range, or...
+      ansible.builtin.set_fact:
+        allocated_egressip: "{{ egressips_avail[0] }}"
+      when: role.egress_ip is not defined
+
+    - name: ...if egress IP was specified, ensure it is available and in openshift.egress_range.
+      block:
+        - name: Verify the requested IP is still available.
+          ansible.builtin.assert:
+            that:
+              - role.egress_ip in egressips_avail
+            success_msg: "OK, requested egress IP is still available."
+            fail_msg: "FATAL: requested egress IP ({{ role.egress_ip }}) is not available or not from egress range ({{ openshift.egress_range }})."
+
+        - name: If we survived up until here, that is an acceptable egress IP.
+          ansible.builtin.set_fact:
+            allocated_egressip: "{{ role.egress_ip }}"
+
+      when: role.egress_ip is defined
 
   when: (role.state | default('present')) == 'present'
+
+- name: Verify that the project exists and is a valid ICHP namespace.
+  block:
+    - name: Ensure that the project is there.
+      kubernetes.core.k8s_info:
+        kubeconfig: tmp/kubeconfig-ocp4
+        validate_certs: no
+        api_version: v1
+        kind: namespace
+        name: "{{ role.name }}"
+      register: namespace
+
+    - name: Fail if the namespace exists.
+      ansible.builtin.assert:
+        that:
+          - namespace.resources is defined
+          - namespace.resources | length == 1
+        success_msg: "OK, project exists."
+        fail_msg: "FATAL: project \"{{ role.name }}\" does not exist."
+
+    - name: Fail if the namespace is not properly labeled.
+      ansible.builtin.assert:
+        that:
+          - namespace.resources is defined
+          - namespace.resources | length == 1
+          - namespace.resources.metadata.labels["ichp.ing.net/generated"] is defined
+        success_msg: "OK, project looks like ICHP."
+        fail_msg: "FATAL: project \"{{ role.name }}\" does not look like an ICHP project."
+
+  when: (role.state | default('present')) == 'absent'
 
 - name: Apply the project template to the cluster with correct state set.
   kubernetes.core.k8s:
