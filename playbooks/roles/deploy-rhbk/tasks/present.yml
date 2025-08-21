@@ -269,7 +269,7 @@
   ansible.builtin.uri:
     return_content: yes
     validate_certs: no
-    url: "https://{{ rhbk_fqdn }}/realms/{{ rhbk.realm | default('sample-realm') }}"
+    url: "https://{{ rhbk_fqdn }}/realms/master"
   register: rhbk_is_ready
   until: rhbk_is_ready.status == 200
   retries: 24
