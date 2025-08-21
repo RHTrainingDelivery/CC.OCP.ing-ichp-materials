@@ -44,6 +44,8 @@
 #
 # NOTE: Must have an operator deployed in that namespace prior (use deploy-operators role for that).
 #
+# More info: https://www.keycloak.org/docs-api/latest/rest-api/index.html
+#
 - name: Pick up whatever value we can for rhbk.state.
   ansible.builtin.set_fact:
     rhbk_action: "{{ rhbk_state | default(rhbk.state | default('present')) }}"
