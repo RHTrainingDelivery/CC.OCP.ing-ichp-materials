@@ -42,14 +42,84 @@
 #
 # IMPORTANT: XXX: ALL COMPUTE UNITS MUST BE IN milicores AND Mi!
 #
-# TODO: verify stuff before applying template
+# TODO: remove egress IPs without their corresponding projects
 #
 - name: Show the values at verbosity 1+
   ansible.builtin.debug:
     var: role
     verbosity: 1
 
-- name: Apply the project template to the cluster.
+# TODO: conditional block for state: present
+- name: Check the values and apply sanity if state=present.
+  block:
+    - name: Verify that the requesting user exists.
+      kubernetes.core.k8s_info:
+        kubeconfig: tmp/kubeconfig-ocp4
+        validate_certs: no
+        api_version: user.openshift.io/v1
+        kind: user
+        name: "{{ role.requester }}"
+      register: requester
+
+    - name: Fail if the user is missing.
+      ansible.builtin.assert:
+        that:
+          - requester.resources is defined
+          - requester.resources | length == 1
+        success_msg: "OK, requester exists as an OpenShift user."
+        fail_msg: "FATAL: requester ({{ role.requester }}) does not exist as an OpenShift user."
+
+    - name: Ensure that the project is not there yet.
+      kubernetes.core.k8s_info:
+        kubeconfig: tmp/kubeconfig-ocp4
+        validate_certs: no
+        api_version: v1
+        kind: namespace
+        name: "{{ role.name }}"
+      register: namespace
+
+    - name: Fail if the namespace exists.
+      ansible.builtin.assert:
+        that:
+          - namespace.resources is defined
+          - namespace.resources | length == 0
+        success_msg: "OK, project does not exist yet."
+        fail_msg: "FATAL: project \"{{ role.name }}\" already exists; remove it using delete-project.yml and retry."
+
+    - name: Ensure that the clusterrole exists.
+      kubernetes.core.k8s_info:
+        kubeconfig: tmp/kubeconfig-ocp4
+        validate_certs: no
+        api_version: rbac.authorization.k8s.io/v1
+        kind: clusterrole
+        name: "{{ role.rbac_level }}"
+      register: clusterrole
+
+    - name: Fail if the requested cluster role is missing.
+      ansible.builtin.assert:
+        that:
+          - clusterrole.resources is defined
+          - clusterrole.resources | length == 1
+        success_msg: "OK, clusterrole exists."
+        fail_msg: "FATAL: clusterrole ({{ role.rbac_level }}) does not exist."
+
+    - name: Get a list of allocated egress IPs
+      kubernetes.core.k8s_info:
+        kubeconfig: tmp/kubeconfig-ocp4
+        validate_certs: no
+        api_version: k8s.ovn.org/v1
+        kind: egressip
+      register: egressips
+
+    - name: Find an available egress IP from openshift.egress_range, or...
+      debug:
+        var: egressips | community.general.json_query('resources[*].status.items[*].egressIP')
+
+    #- name: ...if egress IP was specified, ensure it is available and in openshift.egress_range.
+
+  when: role.state == "present"
+
+- name: Apply the project template to the cluster with correct state set.
   kubernetes.core.k8s:
     kubeconfig: tmp/kubeconfig-ocp4
     validate_certs: no
