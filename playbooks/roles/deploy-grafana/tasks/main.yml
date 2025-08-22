@@ -1,0 +1,140 @@
+---
+# Ensures Grafana is deployed and connected to UWM Prometheus data source.
+- name: See if the Grafana project is there.
+  kubernetes.core.k8s_info:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: v1
+    kind: namespace
+    name: grafana
+  register: grafana_ns
+
+- name: Fail if not so.
+  ansible.builtin.assert:
+    that:
+      - grafana_ns.resources is defined
+      - grafana_ns.resources | length == 1
+    success_msg: "OK, grafana namespace found."
+    fail_msg: "FATAL: grafana namespace is missing. Ensure the operator is deployed before proceeding."
+
+- name: See if the Grafana CSV is there as well.
+  kubernetes.core.k8s_info:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: operators.coreos.com/v1alpha1
+    kind: clusterserviceversion
+    namespace: grafana
+    label_selectors:
+      - operators.coreos.com/grafana-operator.grafana=
+  register: grafana_csv
+
+- name: Fail if not so.
+  ansible.builtin.assert:
+    that:
+      - grafana_csv.resources is defined
+      - grafana_csv.resources | length > 0
+    success_msg: "OK, grafana CSV found."
+    fail_msg: "FATAL: grafana CSV is missing. Ensure the operator is deployed before proceeding."
+
+# https://github.com/rh-mobb/helm-charts/blob/main/charts/grafana-cr/templates/grafana.yaml
+# https://rhthsa.github.io/openshift-demo/application-metrics.html
+# https://rhthsa.github.io/openshift-demo/manifests/frontend-v1-and-backend-v1-JVM.yaml
+- name: Ensure a Grafana instance is there.
+  kubernetes.core.k8s:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: grafana.integreatly.org/v1beta1
+    kind: grafana
+    namespace: grafana
+    name: dashboards
+    resource_definition:
+      metadata:
+        labels:
+          dashboards: dashboards
+      spec:
+        route:
+          spec:
+            host: dashboards-grafana.apps.ocp4.example.com
+            port:
+              targetPort: 3000
+            tls:
+              termination: edge
+            to:
+              kind: Service
+              name: dashboards-service
+              weight: 100
+            wildcardPolicy: None
+
+- name: Give the service account permission to collect metrics.
+  kubernetes.core.k8s:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: rbac.authorization.k8s.io/v1
+    kind: clusterrolebinding
+    name: grafana-dashboards-sa
+    resource_definition:
+      roleRef:
+        apiGroup: rbac.authorization.k8s.io
+        kind: ClusterRole
+        name: cluster-monitoring-view
+      subjects:
+      - kind: ServiceAccount
+        name: dashboards-sa
+        namespace: grafana
+
+- name: Ensure there is a token secret.
+  kubernetes.core.k8s:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: v1
+    kind: secret
+    namespace: grafana
+    name: dashboards-sa-token
+    resource_definition:
+      type: kubernetes.io/service-account-token
+      metadata:
+        annotations:
+          kubernetes.io/service-account.name: dashboards-sa
+
+- name: Obtain the token from the secret.
+  kubernetes.core.k8s_info:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: v1
+    kind: secret
+    namespace: grafana
+    name: dashboards-sa-token
+  register: sa_token_secret
+
+- name: Register the token as a fact (grafana_token).
+  ansible.builtin.set_fact:
+    grafana_token: "{{ sa_token_secret.resources[0].data.token | b64decode }}"
+
+- name: Ensure a GrafanaDataSource is defined.
+  kubernetes.core.k8s:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: grafana.integreatly.org/v1beta1
+    kind: grafanadatasource
+    namespace: grafana
+    name: user-workload-monitoring
+    resource_definition:
+      spec:
+        instanceSelector:
+          matchLabels:
+            dashboards: dashboards
+        datasource:
+          name: UserMetrics
+          type: prometheus
+          url: 'https://thanos-querier.openshift-monitoring.svc:9091'
+          access: proxy
+          editable: false
+          isDefault: true
+          jsonData:
+            httpHeaderName1: 'Authorization'
+            timeInterval: 5s
+            tlsSkipVerify: true
+          secureJsonData:
+            httpHeaderValue1: 'Bearer {{grafana_token}}'
+
+...

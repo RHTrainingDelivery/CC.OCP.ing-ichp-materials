@@ -128,8 +128,19 @@
         - prep
         - setup
         - labels
+    # Deploy and configure grafana.
+    - include_role:
+        name: deploy-grafana
+        apply:
+          tags:
+            - prep
+            - setup
+            - monitoring
+      tags:
+        - prep
+        - setup
+        - monitoring
 
-# TODO: deploy grafana (?)
 # TODO: deploy logging (?)
 # TODO: logging requires minio
 # TODO: create a private network (nmstate + bridges?)
