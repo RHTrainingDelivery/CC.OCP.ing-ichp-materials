@@ -45,6 +45,15 @@
           enableUserWorkload: true
           alertmanagerMain:
             enableUserAlertmanagerConfig: true
+          prometheusK8s:
+            retention: 1w
+            retentionSize: 4Gi
+            volumeClaimTemplate:
+              spec:
+                storageClassName: nfs-storage
+                resources:
+                  requests:
+                    storage: 4Gi
 
 - name: Ensure that the uwm alertmanager configmap is defined.
   kubernetes.core.k8s:
@@ -60,4 +69,21 @@
           alertmanager:
             enabled: true
             enableAlertmanagerConfig: true
+          prometheus:
+            retention: 1w
+            retentionSize: 4Gi
+            volumeClaimTemplate:
+              spec:
+                storageClassName: nfs-storage
+                resources:
+                  requests:
+                    storage: 4Gi
+          thanosRuler:
+            retention: 1w
+            volumeClaimTemplate:
+              spec:
+                storageClassName: nfs-storage
+                resources:
+                  requests:
+                    storage: 4Gi
 ...
