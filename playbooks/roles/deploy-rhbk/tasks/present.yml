@@ -17,7 +17,6 @@
     success_msg: "OK, namespace found."
     fail_msg: "FATAL: namespace to deploy ({{ rhbk.namespace | default('keycloak') }}) not found. Ensure there is an operator already present."
 
-# TODO: figure this out. probably look at subscription's CSV status attribute for name or something.
 - name: Check if there is a CSV in the namespace.
   kubernetes.core.k8s_info:
     kubeconfig: tmp/kubeconfig-ocp4
@@ -25,9 +24,10 @@
     api_version: operators.coreos.com/v1alpha1
     kind: clusterserviceversion
     namespace: "{{ rhbk.namespace | default('keycloak') }}"
+    label_selectors:
+      - operators.coreos.com/rhbk-operator.keycloak=
   register: prereq_csv
 
-# TODO: figure this out - what is the CSV name, how do you find the operator manifest?
 - name: Fail if not so.
   ansible.builtin.assert:
     that:
