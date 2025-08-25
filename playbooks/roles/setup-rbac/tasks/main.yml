@@ -64,6 +64,7 @@
   when:
     - (sp_crbs | length > 1) or (sp_crbs is not contains("self-provisioners"))
 
+# Looks like we have to remove all of them and recreate self-provisioner.
 - name: Remove any CRBs that are not the default self-provisioners CRB.
   kubernetes.core.k8s:
     kubeconfig: tmp/kubeconfig-ocp4
@@ -72,7 +73,8 @@
     kind: clusterrolebinding
     name: "{{ item }}"
     state: absent
-  loop: "{{ sp_crbs | difference(['self-provisioners']) }}"
+  loop: "{{ sp_crbs }}"
+  # "{{ sp_crbs | difference(['self-provisioners']) }}"
 
 - name: Ensure that the self-provisioners CRB lists only admin groups.
   kubernetes.core.k8s:
