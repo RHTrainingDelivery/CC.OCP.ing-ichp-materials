@@ -141,6 +141,8 @@
         - setup
         - monitoring
 
+# TODO: configure externalip (ipfailover? metallb?) range
+# TODO: deploy certmanager
 # TODO: deploy logging (?)
 # TODO: logging requires minio
 # TODO: create a private network (nmstate + bridges?)

@@ -20,6 +20,9 @@
 #   - either a fqdn or an existing keycloak resource coordinates
 #   - admin credentials
 #
+# TODO: console.spec.authentication.logoutRedirect (config.openshift.io/v1)
+#   should be patched with a logout URL
+#
 - name: Check that the ingresscontroller's defaultCertificate is set
   kubernetes.core.k8s_info:
     kubeconfig: tmp/kubeconfig-ocp4
