@@ -141,10 +141,35 @@
         - setup
         - monitoring
 
-# TODO: configure externalip (ipfailover? metallb?) range
-# TODO: deploy certmanager
+    # Deploy and configure certmanager
+    - include_role:
+        name: create-certs
+        apply:
+          tags:
+            - prep
+            - setup
+            - tls
+      tags:
+        - prep
+        - setup
+        - tls
+
+    - include_role:
+        name: deploy-certmanager
+        apply:
+          tags:
+            - prep
+            - setup
+            - tls
+      tags:
+        - prep
+        - setup
+        - tls
+
 # TODO: deploy logging (?)
 # TODO: logging requires minio
+
+# TODO: configure externalip (ipfailover? metallb?) range
 # TODO: create a private network (nmstate + bridges?)
 
 # Some additional configuration for infra.
