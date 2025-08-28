@@ -1,0 +1,82 @@
+---
+# Ensures a CertManager instance is deployed and configured with a CA.
+- name: See if the Cert Manager project is there.
+  kubernetes.core.k8s_info:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: v1
+    kind: namespace
+    name: cert-manager
+  register: cmgr_ns
+
+- name: Fail if not so.
+  ansible.builtin.assert:
+    that:
+      - cmgr_ns.resources is defined
+      - cmgr_ns.resources | length == 1
+    success_msg: "OK, CertManager namespace found."
+    fail_msg: "FATAL: CertManager namespace is missing. Ensure the operator is deployed before proceeding."
+
+- name: See if the CertManager CSV is there as well.
+  kubernetes.core.k8s_info:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: operators.coreos.com/v1alpha1
+    kind: clusterserviceversion
+    namespace: cert-manager
+    label_selectors:
+      - operators.coreos.com/openshift-cert-manager-operator.cert-manager=
+  register: cmgr_csv
+
+- name: Fail if not so.
+  ansible.builtin.assert:
+    that:
+      - cmgr_csv.resources is defined
+      - cmgr_csv.resources | length > 0
+    success_msg: "OK, CertManager CSV found."
+    fail_msg: "FATAL: CertManager CSV is missing. Ensure the operator is deployed before proceeding."
+
+- name: Read the CA cert on workstation as a fact
+  ansible.builtin.slurp:
+    src: "{{ ansible_facts['user_dir'] }}/ca/ca-cert.pem"
+  register: ca_cert
+
+- name: Read the CA key on workstation as a fact
+  ansible.builtin.slurp:
+    src: "{{ ansible_facts['user_dir'] }}/ca/ca-key.pem"
+  register: ca_key
+
+- name: Ensure a TLS secret containing the two is there
+  kubernetes.core.k8s:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: v1
+    kind: secret
+    namespace: cert-manager
+    name: cert-manager-ca-secret
+    resource_definition:
+      type: kubernetes.io/tls
+      data:
+        tls.crt: "{{ ca_cert.content }}"
+        tls.key: "{{ ca_key.content }}"
+
+- name: Ensure a cert manager instance is there
+  kubernetes.core.k8s:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: operator.openshift.io/v1alpha1
+    kind: certmanager
+    name: cluster-cert-manager
+
+- name: Ensure a cluster issuer is there
+  kubernetes.core.k8s:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: cert-manager.io/v1
+    kind: clusterissuer
+    name: cluster-cert-issuer
+    resource_definition:
+      spec:
+        ca:
+          secretName: cert-manager-ca-secret
+...
