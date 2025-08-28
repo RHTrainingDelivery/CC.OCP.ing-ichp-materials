@@ -20,9 +20,6 @@
 #   - either a fqdn or an existing keycloak resource coordinates
 #   - admin credentials
 #
-# TODO: console.spec.authentication.logoutRedirect (config.openshift.io/v1)
-#   should be patched with a logout URL
-#
 - name: Check that the ingresscontroller's defaultCertificate is set
   kubernetes.core.k8s_info:
     kubeconfig: tmp/kubeconfig-ocp4
@@ -200,4 +197,17 @@
     kind: group
     name: "{{ item }}"
   loop: "{{ rhbk.groups }}"
+
+- name: Ensure the console has a logoutRedirect
+  kubernetes.core.k8s:
+    kubeconfig: tmp/kubeconfig-ocp4
+    validate_certs: no
+    api_version: config.openshift.io/v1
+    kind: console
+    name: cluster
+    state: patched
+    resource_definition:
+      spec:
+        authentication:
+          logoutRedirect: "https://{{ rhbk_fqdn }}/realms/{{ rhbk.realm | default('sample-realm') }}/protocol/openid-connect/logout"
 ...
