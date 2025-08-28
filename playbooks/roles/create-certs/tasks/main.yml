@@ -29,7 +29,6 @@
   community.crypto.openssl_privatekey:
     path: "{{ ansible_facts['user_dir'] }}/ca/ca-key.pem"
     type: RSA
-    cipher: auto
     size: 4096
     mode: 0600
   when: cakey_file.stat.exists == false
