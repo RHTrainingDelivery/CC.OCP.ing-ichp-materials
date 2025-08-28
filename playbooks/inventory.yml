@@ -90,7 +90,7 @@ all:
       - catalog: redhat-operators
         package: openshift-cert-manager-operator
         channel: stable-v1.17
-        namespace: openshift-cert-manager
+        namespace: cert-manager
         desired_csv: cert-manager-operator.v1.17.0
         og_namespaces: []
         approval: Manual
