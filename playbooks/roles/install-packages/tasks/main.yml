@@ -10,5 +10,6 @@
       - ansible-collection-ansible-posix
       - ansible-collection-ansible-utils
       - ansible-collection-community-general
+      - ansible-collection-community-crypto
     state: latest
 ...
