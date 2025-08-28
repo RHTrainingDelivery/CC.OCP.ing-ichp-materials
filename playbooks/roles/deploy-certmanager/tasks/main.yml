@@ -67,6 +67,8 @@
     api_version: operator.openshift.io/v1alpha1
     kind: certmanager
     name: cluster-cert-manager
+    resource_definition:
+      spec: {}
 
 - name: Ensure a cluster issuer is there
   kubernetes.core.k8s:
