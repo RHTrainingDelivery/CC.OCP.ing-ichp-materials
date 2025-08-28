@@ -1,0 +1,83 @@
+---
+# Ensures there is a self-signed CA certificate.
+# Ensures the workstation trusts the CA certificate.
+- name: Ensure that the target directory is there
+  ansible.builtin.file:
+    path: "{{ ansible_facts['user_dir'] }}/ca"
+    state: directory
+    owner: student
+    group: student
+    mode: 0700
+
+- name: Check if CA key exists to save time
+  ansible.builtin.stat:
+    path: "{{ ansible_facts['user_dir'] }}/ca/ca-key.pem"
+    get_attributes: no
+    get_checksum: no
+    get_mime: no
+  register: cakey_file
+
+- name: Check if CA cert exists to save time
+  ansible.builtin.stat:
+    path: "{{ ansible_facts['user_dir'] }}/ca/ca-cert.pem"
+    get_attributes: no
+    get_checksum: no
+    get_mime: no
+  register: cacert_file
+
+- name: Create a new CA private key, if it does not exist yet.
+  community.crypto.openssl_privatekey:
+    path: "{{ ansible_facts['user_dir'] }}/ca/ca-key.pem"
+    passphrase: verysecret
+    type: RSA
+    cipher: auto
+    size: 8192
+    mode: 0600
+  when: cakey_file.stat.exists == false
+
+- name: Generate a CSR for the CA cert.
+  community.crypto.openssl_csr:
+    path: "{{ ansible_facts['user_dir'] }}/ca/ca-csr.pem"
+    privatekey_path: "{{ ansible_facts['user_dir'] }}/ca/ca-key.pem"
+    privatekey_passphrase: verysecret
+    basic_constraints: "CA:TRUE"
+    basic_constraints_critical: yes
+    subject:
+      C: US
+      ST: North Carolina
+      L: Raleigh
+      O: Red Hat
+      OU: RHT
+      CN: Cert Manager Issuer CA
+    mode: 0600
+  when: cacert_file.stat.exists == false
+
+- name: Create a self-signed cert for the CA.
+  community.crypto.x509_certificate:
+    path: "{{ ansible_facts['user_dir'] }}/ca/ca-cert.pem"
+    csr_path: "{{ ansible_facts['user_dir'] }}/ca/ca-csr.pem"
+    privatekey_path: "{{ ansible_facts['user_dir'] }}/ca/ca-key.pem"
+    privatekey_passphrase: verysecret
+    provider: selfsigned
+    selfsigned_not_after: +510w
+    mode: 0600
+  when: cacert_file.stat.exists == false
+
+- name: Get rid of the CSR.
+  ansible.builtin.file:
+    path: "{{ ansible_facts['user_dir'] }}/ca/ca-csr.pem"
+    state: absent
+
+- name: Copy CA cert to ca-trust dir.
+  become: yes
+  ansible.builtin.copy:
+    src: "{{ ansible_facts['user_dir'] }}/ca/ca-cert.pem"
+    dest: "/etc/pki/ca-trust/source/anchors/cert-mgr-ca.pem"
+    mode: 0644
+  register: copied
+
+- name: Have workstation trust the CA.
+  become: yes
+  command: update-ca-trust
+  when: copied.changed
+...
