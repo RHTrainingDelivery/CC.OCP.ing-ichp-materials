@@ -31,7 +31,7 @@
     passphrase: verysecret
     type: RSA
     cipher: auto
-    size: 8192
+    size: 4096
     mode: 0600
   when: cakey_file.stat.exists == false
 

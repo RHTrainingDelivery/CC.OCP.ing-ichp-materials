@@ -66,7 +66,7 @@
     validate_certs: no
     api_version: operator.openshift.io/v1alpha1
     kind: certmanager
-    name: cluster-cert-manager
+    name: cluster
     resource_definition:
       spec: {}
 
