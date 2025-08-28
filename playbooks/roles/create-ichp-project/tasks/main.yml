@@ -42,8 +42,6 @@
 #
 # IMPORTANT: XXX: ALL COMPUTE UNITS MUST BE IN milicores AND Mi!
 #
-# TODO: remove egress IPs without their corresponding projects
-#
 - name: Show the values at verbosity 1+
   ansible.builtin.debug:
     var: role
