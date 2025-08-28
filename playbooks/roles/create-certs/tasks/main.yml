@@ -37,7 +37,6 @@
   community.crypto.openssl_csr:
     path: "{{ ansible_facts['user_dir'] }}/ca/ca-csr.pem"
     privatekey_path: "{{ ansible_facts['user_dir'] }}/ca/ca-key.pem"
-    privatekey_passphrase: verysecret
     basic_constraints: "CA:TRUE"
     basic_constraints_critical: yes
     subject:
@@ -55,7 +54,6 @@
     path: "{{ ansible_facts['user_dir'] }}/ca/ca-cert.pem"
     csr_path: "{{ ansible_facts['user_dir'] }}/ca/ca-csr.pem"
     privatekey_path: "{{ ansible_facts['user_dir'] }}/ca/ca-key.pem"
-    privatekey_passphrase: verysecret
     provider: selfsigned
     selfsigned_not_after: +510w
     mode: 0600
