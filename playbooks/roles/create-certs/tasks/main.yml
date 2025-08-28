@@ -28,7 +28,6 @@
 - name: Create a new CA private key, if it does not exist yet.
   community.crypto.openssl_privatekey:
     path: "{{ ansible_facts['user_dir'] }}/ca/ca-key.pem"
-    passphrase: verysecret
     type: RSA
     cipher: auto
     size: 4096
