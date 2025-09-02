@@ -1,5 +1,5 @@
 ---
-# Prepares the environment for the apps-placement exercise, and cleans up afterwards.
+# Prepares the environment for the apps-review exercise, and cleans up afterwards.
 #
 # TODO: create some projects:
 #          - one with a project node selector
@@ -32,7 +32,7 @@
 #      deploy an app w/requests, generate load, observe timing
 #          add HPA, generate load, compare
 #
-- name: Prepare (or clean up) the exercise of apps-placement.
+- name: Prepare the exercise of apps-review.
   hosts: localhost
   gather_subset: min
   become: no

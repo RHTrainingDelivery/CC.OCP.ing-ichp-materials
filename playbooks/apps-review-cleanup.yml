@@ -1,0 +1,28 @@
+# Remove the apps-review projects.
+- name: Clean up the exercise of apps-review.
+  hosts: localhost
+  gather_subset: min
+  become: no
+  tasks:
+    - name: Prereqs
+      include_role:
+        name: check-env
+
+    - name: Ensure the projects are there
+      kubernetes.core.k8s:
+        kubeconfig: tmp/kubeconfig-ocp4
+        validate_certs: no
+        api_version: v1
+        kind: namespace
+        name: "{{ item.name }}"
+        state: absent
+      loop:
+        - name: apps-selector-conflict
+          nodeselector: kubernetes.io/hostname=worker03
+        - name: apps-selector-impossible
+        - name: apps-lowquota
+        - name: apps-taint
+        - name: apps-antiaffinity
+        #- name: apps-lowlimit
+        - name: apps-pdb
+
