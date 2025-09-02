@@ -236,11 +236,11 @@
             replicas: 3
             selector:
               matchLabels:
-                app: hello
+                app: dislike
             template:
               metadata:
                 labels:
-                  app: hello
+                  app: dislike
               spec:
                 #affinity:
                 #  podAntiAffinity:
@@ -271,11 +271,11 @@
             replicas: 3
             selector:
               matchLabels:
-                app: hello
+                app: refuse
             template:
               metadata:
                 labels:
-                  app: hello
+                  app: refuse
               spec:
                 #affinity:
                 #  podAntiAffinity:
