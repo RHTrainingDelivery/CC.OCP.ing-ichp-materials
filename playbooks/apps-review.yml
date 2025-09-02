@@ -249,7 +249,7 @@
                 #        podAffinityTerm:
                 #          labelSelector:
                 #            matchLabels:
-                #              app: hello
+                #              app: dislike
                 #          topologyKey: kubernetes.io/hostname
                 containers:
                   - name: hello
@@ -282,7 +282,7 @@
                 #    requiredDuringSchedulingIgnoredDuringExecution:
                 #      labelSelector:
                 #        matchLabels:
-                #          app: hello
+                #          app: refuse
                 #      topologyKey: kubernetes.io/hostname
                 containers:
                   - name: hello
