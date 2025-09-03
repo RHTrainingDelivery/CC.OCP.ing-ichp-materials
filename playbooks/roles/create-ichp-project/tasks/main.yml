@@ -170,7 +170,7 @@
         that:
           - namespace.resources is defined
           - namespace.resources | length == 1
-          - namespace.resources.metadata.labels["ichp.ing.net/generated"] is defined
+          - namespace.resources[0].metadata.labels["ichp.ing.net/generated"] is defined
         success_msg: "OK, project looks like ICHP."
         fail_msg: "FATAL: project \"{{ role.name }}\" does not look like an ICHP project."
 
