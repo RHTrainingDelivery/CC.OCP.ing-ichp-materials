@@ -1,37 +1,5 @@
 ---
 # Prepares the environment for the apps-review exercise, and cleans up afterwards.
-#
-# TODO: create some projects:
-#          - one with a project node selector
-#              and a deployment with conflicting node {selector|affinity} ???
-#          - one with a very low quota
-#              and a deployment which exceeds the quota
-#          - taint a node
-#              and select a deployment to run a pod on it
-#      then debug these conditions and fix them
-#
-# TODO: make two nodes unschedulable, create a project, and deploy an application, scale to three
-#          make the nodes schedulable again, use podAntiAffinity to disperse the pods, scale to 6 and see scheduling
-#
-#      simulate load (loadtest? loadgenerator?) beyond container's cpu limit and then improve performance by raising limit
-#
-# TODO: probes with extremely low cpu limit, see them crashloop, fix it
-#      
-#      use stress-ng ap to allocate all memory (more than limit), monitor the metrics to diagnose the crash
-#
-#      client-server apps, low limits, monitor performance
-#
-#      custom metrics, grafana
-#
-# TODO: run two instances on the same node, no pdb, drain the node - observe failure in another terminal
-#          repeat with pdb, see no failures
-#
-#      recreate strategy, rollout a change, observe outage in another terminal
-#          switch to rolling w/maxUnavailable, repeat, see no failures
-#
-#      deploy an app w/requests, generate load, observe timing
-#          add HPA, generate load, compare
-#
 - name: Prepare the exercise of apps-review.
   hosts: localhost
   gather_subset: min

@@ -1,3 +1,4 @@
+---
 # Remove the apps-review projects.
 - name: Clean up the exercise of apps-review.
   hosts: localhost
@@ -25,4 +26,4 @@
         - name: apps-antiaffinity
         #- name: apps-lowlimit
         - name: apps-pdb
-
+...
