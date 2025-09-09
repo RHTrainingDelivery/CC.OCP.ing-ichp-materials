@@ -69,14 +69,14 @@ all:
         package: metallb-operator
         channel: stable
         namespace: metallb-system
-        desired_csv: metallb-operator.v4.16.0-202507221936
+        desired_csv: metallb-operator.v4.16.0-202508201333
         og_namespaces: []
         approval: Manual
       - catalog: redhat-operators
         package: rhbk-operator
         channel: stable-v26.2
         namespace: keycloak
-        desired_csv: rhbk-operator.v26.2.7-opr.1
+        desired_csv: rhbk-operator.v26.2.8-opr.1
         og_namespaces:
           - keycloak
         approval: Manual
@@ -84,7 +84,7 @@ all:
         package: grafana-operator
         channel: v5
         namespace: grafana
-        desired_csv: grafana-operator.v5.18.0
+        desired_csv: grafana-operator.v5.19.4
         og_namespaces: []
         approval: Manual
       - catalog: redhat-operators
