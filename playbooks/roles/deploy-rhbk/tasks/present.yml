@@ -275,6 +275,11 @@
   retries: 24
   delay: 5
 
+- name: Add another 10 seconds because Keycloak flaps.
+  ansible.builtin.pause:
+    prompt: Waiting 10 seconds for Keycloak to settle.
+    seconds: 10
+
 - name: Get a fresh bearer token.
   ansible.builtin.include_tasks:
     file: tasks/token.yml
