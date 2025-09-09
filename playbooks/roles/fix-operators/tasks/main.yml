@@ -114,7 +114,7 @@
       - op_mft.resources is defined
       - (op_mft.resources | length) > 0
       - op_mft.resources[0].status.catalogSource == added_operators[0].catalog
-      - 'added_operators[0].desired_csv in (op_mft.resources[0] | community.general.json_query("status.channels[added_operators[0].channel].entries[*].name") | list)'
+      - 'added_operators[0].desired_csv in (op_mft.resources[0] | community.general.json_query("status.channels[?name==`" + added_operators[0].channel + "`].entries[*].name") | list)[0]'
     fail_msg: "ERROR: {{ added_operators[0].package }} package manifest not deployed correctly."
     success_msg: "OK: {{ added_operators[0].package }} package manifest configured correctly."
 ...
