@@ -168,6 +168,11 @@
             value: true
       when: role.approval == "Manual"
 
+    # XXX This is temporary until we figure out how to install a SPECIFIC CSV. XXX
+    - name: Remember the installPlan CSV as a fact
+      ansible.builtin.set_fact:
+        target_csv: "{{ sub_ip_post[0].spec.clusterServiceVersionNames[0] }}"
+
   when: subscription.changed
 
 - name: Wait for CSV to show up and complete
@@ -177,7 +182,7 @@
     api_version: operators.coreos.com/v1alpha1
     kind: clusterserviceversion
     namespace: "{{ role.namespace }}"
-    name: "{{ role.desired_csv }}"
+    name: "{{ target_csv | default(role.desired_csv) }}"
   register: new_csv
   until:
     - new_csv.resources is defined
