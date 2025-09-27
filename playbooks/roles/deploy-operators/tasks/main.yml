@@ -152,7 +152,7 @@
 
     - name: Announce the installPlan name
       ansible.builtin.debug:
-        msg: Found installPlan {{ latest_install_plan }}.
+        msg: Found installPlan {{ latest_install_plan }}
 
     - name: Approve the installPlan if the approval was Manual
       kubernetes.core.k8s_json_patch:
@@ -168,12 +168,27 @@
             value: true
       when: role.approval == "Manual"
 
-    # XXX This is temporary until we figure out how to install a SPECIFIC CSV. XXX
     - name: Remember the installPlan CSV as a fact
       ansible.builtin.set_fact:
         target_csv: "{{ sub_ip_post[0].spec.clusterServiceVersionNames[0] }}"
 
+    - name: Announce the CSV
+      ansible.builtin.debug:
+        msg: The installPlan is for {{ target_csv }}
+
   when: subscription.changed
+
+- name: Figure out what CSV the installPlan was for if not first run.
+  block:
+    - name: Set a fact for the target_csv
+      ansible.builtin.set_fact:
+        target_csv: "{{ sub_ip_pre[0].spec.clusterServiceVersionNames[0] }}"
+
+    - name: Announce the CSV
+      ansible.builtin.debug:
+        msg: The installPlan is for {{ target_csv }}
+
+  when: not subscription.changed
 
 - name: Wait for CSV to show up and complete
   kubernetes.core.k8s_info:
@@ -182,7 +197,7 @@
     api_version: operators.coreos.com/v1alpha1
     kind: clusterserviceversion
     namespace: "{{ role.namespace }}"
-    name: "{{ target_csv | default(role.desired_csv) }}"
+    name: "{{ target_csv }}"
   register: new_csv
   until:
     - new_csv.resources is defined
