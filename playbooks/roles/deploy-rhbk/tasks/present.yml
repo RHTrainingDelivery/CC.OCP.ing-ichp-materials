@@ -366,6 +366,11 @@
       delay: 5
       when: created_import.changed
 
+    - name: Add another 10 seconds because Keycloak flaps.
+      ansible.builtin.pause:
+        prompt: Waiting 10 seconds for Keycloak to settle.
+        seconds: 10
+
   when:
     - realms[rhbk.realm | default('sample-realm')] is not defined
 
