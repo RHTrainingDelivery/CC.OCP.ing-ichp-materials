@@ -69,7 +69,7 @@ all:
         package: metallb-operator
         channel: stable
         namespace: metallb-system
-        desired_csv: metallb-operator.v4.16.0-202508201333
+        desired_csv: metallb-operator.v4.16.0-202509091828
         og_namespaces: []
         approval: Manual
       - catalog: redhat-operators
