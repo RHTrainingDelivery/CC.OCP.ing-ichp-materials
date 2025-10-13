@@ -1,0 +1,3 @@
+FROM registry.redhat.io/ubi8/php-74:latest
+COPY index.php /opt/app-root/src
+CMD /usr/libexec/s2i/run
