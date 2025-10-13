@@ -1,5 +1,8 @@
 ---
 # Ensures a CertManager instance is deployed and configured with a CA.
+#
+# TODO: oc patch featuregate/cluster --type=merge -p '{"spec": {"customNoUpgrade": {"enabled": ["RouteExternalCertificate"]}}}'
+#
 - name: See if the Cert Manager project is there.
   kubernetes.core.k8s_info:
     kubeconfig: tmp/kubeconfig-ocp4
