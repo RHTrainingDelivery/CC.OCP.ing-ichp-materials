@@ -76,6 +76,7 @@
   loop: "{{ sp_crbs }}"
   # "{{ sp_crbs | difference(['self-provisioners']) }}"
 
+# TODO: this looks like it adds system:authenticated:oauth after every lab restart.
 - name: Ensure that the self-provisioners CRB lists only admin groups.
   kubernetes.core.k8s:
     kubeconfig: tmp/kubeconfig-ocp4

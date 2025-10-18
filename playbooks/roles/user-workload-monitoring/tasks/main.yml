@@ -47,7 +47,7 @@
             enableUserAlertmanagerConfig: true
           prometheusK8s:
             retention: 1w
-            retentionSize: 4G
+            retentionSize: 4GiB
             volumeClaimTemplate:
               spec:
                 storageClassName: nfs-storage
@@ -71,7 +71,7 @@
             enableAlertmanagerConfig: true
           prometheus:
             retention: 1w
-            retentionSize: 4G
+            retentionSize: 4GiB
             volumeClaimTemplate:
               spec:
                 storageClassName: nfs-storage
